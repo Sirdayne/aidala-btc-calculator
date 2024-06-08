@@ -1,0 +1,77 @@
+:root
+  font-family: 'SF Pro Display', sans-serif
+
+.ai-card
+  padding: 5px 20px
+
+.ai-title
+  color: rgb(7, 20, 55)
+  font-size: 18px
+  font-weight: bold
+  margin-bottom: 5px
+
+.ai-sub-title
+  font-size: 13px
+  color: rgb(153, 161, 183)
+  margin-bottom: 15px
+
+.ai-button
+  background: rgb(62, 151, 255, 0)
+  color: rgb(126, 130, 153)
+  border-radius: 6px
+  font-family: "SF Pro Display", sans-serif
+  font-size: 13px
+  padding: 12px 18px
+  box-sizing: border-box
+  cursor: pointer
+  font-weight: bold
+  transition: .3s linear
+
+  &.active
+    background: rgb(62, 151, 255)
+    color: rgb(255, 255, 255)
+
+.ai-el-button.el-button
+  background: rgb(62, 151, 255)
+  color: rgb(255, 255, 255)
+  border-radius: 6px
+  font-family: "SF Pro Display", sans-serif
+  font-size: 13px
+  padding: 12px 48px
+  box-sizing: border-box
+  cursor: pointer
+  font-weight: bold
+  transition: .3s linear
+
+.ai-form-check
+  display: flex
+  align-items: center
+  padding-left: 0
+  margin: 0
+  width: 250px
+
+  &-input
+    background-color: #17C653
+    border: 0
+    background-image: url("assets/img/ai-form-check-input.svg")
+    width: 22px
+    height: 22px
+    appearance: none
+    background-repeat: no-repeat
+    background-position-x: 50%
+    background-position-y: 50%
+
+    &:not(:checked)
+      background: rgb(241, 241, 244)
+
+  &-label
+    color: #3F4254
+    font-size: 16px
+    font-weight: 600
+    line-height: 16px
+    margin-left: 13px
+    margin-top: 4px
+
+.ai-form-check-input[type=checkbox]
+  background-size: 60% 60%
+  border-radius: .45em
