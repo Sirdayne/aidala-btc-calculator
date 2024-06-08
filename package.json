@@ -1,14 +1,10 @@
 {
   "name": "aidala-btc-calculator",
-  "version": "0.0.7",
-  "files": "dist",
+  "version": "0.0.9",
   "main": "./dist/aidala-btc-calculator.js",
-  "module": "./dist/aidala-btc-calculator.js",
-  "exports": {
-    ".": {
-      "import": "./dist/aidala-btc-calculator.js",
-      "require": "./dist/aidala-btc-calculator.js"
-    }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sirdayne/aidala-btc-calculator.git"
   },
   "scripts": {
     "dev": "vite",
