@@ -8,4 +8,4 @@ const app = createApp(App);
 
 app.use(VueApexCharts);
 app.use(ElementPlus);
-app.mount('#aidala-calculator');
+app.mount('#aidala-btc-calculator');
