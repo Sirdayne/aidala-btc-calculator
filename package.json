@@ -1,6 +1,6 @@
 {
   "name": "aidala-btc-calculator",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "main": "./dist/aidala-btc-calculator.js",
   "repository": {
     "type": "git",
@@ -14,10 +14,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
     "@vueuse/core": "^10.10.0",
     "apexcharts": "^3.49.1",
     "axios": "^1.7.2",
     "element-plus": "^2.7.4",
+    "file-saver": "^2.0.5",
     "moment": "^2.30.1",
     "vite-plugin-css-injected-by-js": "^3.5.1",
     "vue": "^3.4.21",

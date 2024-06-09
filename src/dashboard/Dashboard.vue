@@ -54,6 +54,27 @@
       </div>
     </div>
 
+    <div class="ai-dashboard-share">
+
+      <DashboardShare
+          :miner="miner"
+          :start-date="startDate"
+          :end-date="endDate"
+          :time-mode="timeMode"
+          :sell-mode="sellMode"
+          :currency="currency"
+      />
+
+      <DashboardExportButton
+          :miner="miner"
+          :start-date="startDate"
+          :end-date="endDate"
+          :time-mode="timeMode"
+          :sell-mode="sellMode"
+          :currency="currency"
+      />
+    </div>
+
     <DashboardMarketData></DashboardMarketData>
 
   </div>
@@ -68,6 +89,8 @@ import DashboardCalculator from '../dashboard/components/DashboardCalculator.vue
 import moment from "moment/moment";
 import DashboardMarketData from '../dashboard/components/DashboardMarketData.vue';
 import DashboardTradingAnalysis from '../dashboard/components/DashboardTradingAnalysis.vue';
+import DashboardExportButton from '@/dashboard/components/DashboardExportButton.vue';
+import DashboardShare from '@/dashboard/components/DashboardShare.vue';
 
 export default defineComponent({
   name: "dashboard-main",
@@ -77,7 +100,9 @@ export default defineComponent({
     DashboardCostBenefitAnalysis,
     DashboardChartStats,
     DashboardChart,
-    DashboardCalculator
+    DashboardCalculator,
+    DashboardExportButton,
+    DashboardShare
   },
   setup() {
 
@@ -176,6 +201,14 @@ export default defineComponent({
   border: 1px solid rgb(241, 241, 244);
   border-radius: 8px;
   box-shadow: rgba(0, 0, 0, 0.03) 0 3px 4px 0;
+}
+
+.ai-dashboard-share {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 0;
+  margin: 0;
 }
 
 @media only screen and (max-width: 1100px) {

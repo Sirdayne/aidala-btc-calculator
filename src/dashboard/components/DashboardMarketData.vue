@@ -89,7 +89,6 @@ export default defineComponent({
   display: flex
   justify-content: space-between
   align-items: center
-  margin-top: 20px
   padding: 30px 40px
   background: #EEF6FF
   box-shadow: 0 3px 4px rgba(0, 0, 0, 0.03)
