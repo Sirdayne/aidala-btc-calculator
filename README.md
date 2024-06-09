@@ -34,4 +34,9 @@ and run function with id parameter to mount calculator
 window.injectAidalaCalculator('#my-id');
 ```
 
+to unmount Aidala Calculator
+```bash
+window.unmountAidalaCalculator();
+```
+
 or if you do not use npm, you can copy-paste aidala-btc-calculator.js to your website and run window.injectAidalaCalculator('#my-id')

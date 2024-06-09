@@ -9,6 +9,13 @@ const app = createApp(App);
 app.use(VueApexCharts);
 app.use(ElementPlus);
 
+
+(window as any).aidalaCalculator = app;
+
 (window as any).injectAidalaCalculator = (id) => {
     app.mount(id);
-}
+};
+
+(window as any).unmountAidalaCalculator = () => {
+    app.unmount();
+};
