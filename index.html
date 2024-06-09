@@ -7,7 +7,13 @@
     <title>AiDala | Calculator</title>
   </head>
   <body>
-    <div id="aidala-btc-calculator"></div>
+    <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
+
+<script>
+setTimeout(() => {
+    window.injectAidalaCalculator('#app');
+}, 500)
+</script>
