@@ -1,9 +1,37 @@
-# Vue 3 + TypeScript + Vite
+# Aidala BTC Calculator
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+front-end ready to use solution from aidala.uk
+check it on https://aidala.uk/dashboard
 
-## Recommended Setup
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (previously Volar) and disable Vetur
+## For Local Use with github
+run command to install npm packages
+```bash
+npm install
+```
 
-- Use [vue-tsc](https://github.com/vuejs/language-tools/tree/master/packages/tsc) for performing the same type checking from the command line, or for generating d.ts files for SFCs.
+run command to run locally
+```bash
+npm run dev
+```
+
+## What Inside
+calculator is written on Vue 3 + Vite
+
+## How To Use from npm
+```bash
+npm i aidala-btc-calculator
+```
+to use it just import js script from
+
+```bash
+import 'aidala-btc-calculator/dist/aidala-btc-calculator.js'
+```
+
+and run function with id parameter to mount calculator
+
+```bash
+window.injectAidalaCalculator('#my-id');
+```
+
+or if you do not use npm, you can copy-paste aidala-btc-calculator.js to your website and run window.injectAidalaCalculator('#my-id')
