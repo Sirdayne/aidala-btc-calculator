@@ -44,12 +44,12 @@
 
       <div class="dashboard-calculator-form__item">
         <div class="label">Start Date</div>
-        <el-date-picker v-model="startDate"></el-date-picker>
+        <el-date-picker @change="onStartDateChange" v-model="startDate"></el-date-picker>
       </div>
 
       <div class="dashboard-calculator-form__item">
         <div class="label">End Date</div>
-        <el-date-picker v-model="endDate"></el-date-picker>
+        <el-date-picker @change="onEndDateChange" v-model="endDate"></el-date-picker>
       </div>
 
       <div class="dashboard-calculator-form__item">
@@ -69,6 +69,7 @@
 
 <script lang="ts">
 import { defineComponent, onBeforeMount, onMounted, ref, watch } from "vue";
+import { ElMessage } from 'element-plus';
 import axios from 'axios';
 import moment from "moment";
 import { watchDebounced } from '@vueuse/core'
@@ -93,6 +94,47 @@ export default defineComponent({
     const setMinerData = () => {
       hashrate.value = miner.value.hashrate;
       power.value = miner.value.power;
+    }
+
+    const startValidationDate = '2019-01-01';
+    const endValidationDate = moment(new Date).subtract(1, 'days');
+
+    const onStartDateChange = () => {
+      const isAfter = moment(startDate.value).isAfter(startValidationDate);
+      const isBefore = moment(startDate.value).isBefore(endValidationDate);
+      if (!isAfter) {
+        startDate.value = moment(startValidationDate).toDate();
+        ElMessage({
+          message: `Sorry, the earliest available date is ${moment(startValidationDate).format('LL')}`,
+          type: 'error',
+        })
+      }
+      if (!isBefore) {
+        startDate.value = moment(endValidationDate).toDate();
+        ElMessage({
+          message: `Sorry, the earliest available date is ${moment(endValidationDate).format('LL')}`,
+          type: 'error',
+        })
+      }
+    }
+
+    const onEndDateChange = () => {
+      const isAfter = moment(endDate.value).isAfter(startValidationDate);
+      const isBefore = moment(endDate.value).isBefore(endValidationDate);
+      if (!isAfter) {
+        endDate.value = moment(startValidationDate).toDate();
+        ElMessage({
+          message: `Sorry, the earliest available date is ${moment(startValidationDate).format('LL')}`,
+          type: 'error',
+        })
+      }
+      if (!isBefore) {
+        endDate.value = moment(endValidationDate).toDate();
+        ElMessage({
+          message: `Sorry, the earliest available date is ${moment(endValidationDate).format('LL')}`,
+          type: 'error',
+        })
+      }
     }
 
     watchDebounced(
@@ -202,6 +244,8 @@ export default defineComponent({
       costOfHw,
       startDate,
       endDate,
+      onStartDateChange,
+      onEndDateChange,
       emitMiner,
       miners,
       setMinerData
