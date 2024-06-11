@@ -225,4 +225,16 @@ export default defineComponent({
     margin-top: 12px;
   }
 }
+
+
+
+@media only screen and (max-width: 500px) {
+  .ai-dashboard-share {
+    display: block;
+  }
+  .dashboard-share-content {
+    display: block;
+  }
+}
+
 </style>

@@ -93,6 +93,7 @@ export default defineComponent({
   background: #EEF6FF
   box-shadow: 0 3px 4px rgba(0, 0, 0, 0.03)
   border-radius: 12px
+  box-sizing: border-box
 
   &__content
     display: flex
@@ -137,4 +138,12 @@ export default defineComponent({
   .live-market-data-item__container
     margin: 20px 20px 0 0
     justify-content: start
+
+@media only screen and (max-width: 500px)
+  .live-market-data
+    padding: 15px
+
+    &__content
+      display: block
+
 </style>

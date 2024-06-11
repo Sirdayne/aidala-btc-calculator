@@ -69,5 +69,13 @@ export default defineComponent({
   display: flex
   align-items: center
   gap: 6px
+
+@media only screen and (max-width: 500px)
+  .dashboard-share-content
+    display: block
+
+    .ai-el-button
+      margin-top: 15px
+      margin-bottom: 30px
 </style>
 
