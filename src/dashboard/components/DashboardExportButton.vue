@@ -11,7 +11,6 @@
 import { defineComponent, ref, onBeforeMount, watch } from "vue";
 import axios from 'axios';
 import moment from 'moment/moment';
-import { saveAs } from 'file-saver';
 
 export default defineComponent({
   name: "dashboard-export-button",
@@ -57,10 +56,9 @@ export default defineComponent({
           })
           .then(function (response) {
             console.log(response, ' response')
-            const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            saveAs(blob, 'exported.xlsx');
-
-            saveFile(response);
+            // const blob = new Blob([response.data], {type: "octet/stream"});
+            // saveAs(blob, 'exported.xlsx');
+            saveFile(response.data);
           })
           .catch(function (error) {
             console.log('Export Error: ', error);
@@ -69,14 +67,14 @@ export default defineComponent({
           });
     }
 
-    const saveFile = (response) => {
-      const url = window.URL.createObjectURL(response.data, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const saveFile = (blob) => {
+      const format = 'xlsx';
+      const filename = 'exported'
       const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'filename.xlsx');
-      document.body.appendChild(link);
+      link.href = window.URL.createObjectURL(blob);
+      const date = new Date();
+      link.download = `${filename}-${date.toLocaleDateString()}.${format}`;
       link.click();
-      document.body.removeChild(link);
     }
 
     return {
