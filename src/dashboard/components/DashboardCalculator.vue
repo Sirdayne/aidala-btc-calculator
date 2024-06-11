@@ -68,7 +68,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeMount, ref, watch } from "vue";
+import { defineComponent, onBeforeMount, onMounted, ref, watch } from "vue";
 import axios from 'axios';
 import moment from "moment";
 import { watchDebounced } from '@vueuse/core'
@@ -146,12 +146,35 @@ export default defineComponent({
         quantity: quantity.value,
         cost_of_hw: costOfHw.value
       }
+      console.log(minerData, ' MINER')
       ctx.emit('setMiner', minerData);
+    }
+
+    const getValueFromParams = (params, key, type = 'string') => {
+      return type === 'number' ? Number(params.get(key)) : params.get(key);
+    }
+
+    const setDataFromUrl = () => {
+      let uri = window.location.search.substring(1);
+      let params = new URLSearchParams(uri);
+      powerCost.value = getValueFromParams(params, 'powerCost', 'number');
+      power.value = getValueFromParams(params, 'power', 'number');
+      hashrate.value = getValueFromParams(params, 'hashrate', 'number');
+      quantity.value = getValueFromParams(params, 'quantity', 'number');
+      costOfHw.value = getValueFromParams(params, 'costOfHw', 'number');
+
+      emitMiner();
     }
 
     onBeforeMount(() => {
       fetchFormData();
     });
+
+    onMounted(() => {
+      setTimeout(() => {
+        // setDataFromUrl();
+      }, 100);
+    })
 
     const fetchFormData = () => {
       const host = import.meta.env.VITE_APP_API_HOST;

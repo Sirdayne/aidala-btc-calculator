@@ -54,7 +54,7 @@
       </div>
     </div>
 
-    <div class="ai-dashboard-share">
+    <div v-if="false" class="ai-dashboard-share">
 
       <DashboardShare
           :miner="miner"

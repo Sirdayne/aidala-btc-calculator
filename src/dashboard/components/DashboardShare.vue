@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onBeforeMount, watch } from "vue";
+import { defineComponent, ref, onBeforeMount, watch, onMounted } from "vue";
 import { CopyDocument } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 
@@ -33,7 +33,6 @@ export default defineComponent({
     currency: String,
   },
   setup(props, ctx) {
-
     const link = ref('aidala.uk/dashboard');
 
     const copyClipboard = () => {
