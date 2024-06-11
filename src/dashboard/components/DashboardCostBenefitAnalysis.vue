@@ -75,32 +75,8 @@ export default defineComponent({
     })
 
     watch(
-        () => props.miner,
-        (newValue, oldValue) => {
-          fetchCostBenefitAnalysis();
-        },
-        { deep: true }
-    )
-
-    watch(
-        () => props.timeMode,
-        (newValue, oldValue) => {
-          fetchCostBenefitAnalysis();
-        },
-        { deep: true }
-    )
-
-    watch(
-        () => props.sellMode,
-        (newValue, oldValue) => {
-          fetchCostBenefitAnalysis();
-        },
-        { deep: true }
-    )
-
-    watch(
-        () => props.currency,
-        (newValue, oldValue) => {
+        () => [props.miner, props.timeMode, props.sellMode, props.currency],
+        () => {
           fetchCostBenefitAnalysis();
         },
         { deep: true }

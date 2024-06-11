@@ -97,16 +97,8 @@ export default defineComponent({
     const sellMode = ref('daily');
 
     watch(
-        () => props.currency,
-        (newValue, oldValue) => {
-          fetchSummaries();
-        },
-        { deep: true }
-    )
-
-    watch(
-        () => props.miner,
-        (newValue, oldValue) => {
+        () => [props.currency, props.miner],
+        () => {
           fetchSummaries();
         },
         { deep: true }

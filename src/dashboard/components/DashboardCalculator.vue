@@ -6,7 +6,7 @@
       <div class="dashboard-calculator-form__item">
         <div class="label">Model</div>
 
-        <el-select v-model="miner"  @change="setMinerData()" aria-label="Select miner name" value-key="id">
+        <el-select v-model="miner" @change="setMinerData()" aria-label="Select miner name" value-key="id">
           <el-option v-for="item in miners" :value="item" :label="item.miner_name" :key="item.id">{{ item?.miner_name }}</el-option>
         </el-select>
 
@@ -68,7 +68,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeMount, onMounted, ref, watch } from "vue";
+import CryptoJS from 'crypto-js';
+import { defineComponent, onBeforeMount, onMounted, ref } from "vue";
 import { ElMessage } from 'element-plus';
 import axios from 'axios';
 import moment from "moment";
@@ -138,45 +139,12 @@ export default defineComponent({
     }
 
     watchDebounced(
-        () => quantity,
-        (newValue, oldValue) => {
+        () => [quantity, hashrate, power, powerCost, costOfHw],
+        () => {
           emitMiner();
         },
         { deep: true, debounce: 500, maxWait: 1000 }
     )
-
-    watchDebounced(
-        () => hashrate,
-        (newValue, oldValue) => {
-          emitMiner();
-        },
-        { deep: true, debounce: 500, maxWait: 1000 }
-    )
-
-    watchDebounced(
-        () => power,
-        (newValue, oldValue) => {
-          emitMiner();
-        },
-        { deep: true, debounce: 500, maxWait: 1000 }
-    )
-
-    watchDebounced(
-        () => powerCost,
-        (newValue, oldValue) => {
-          emitMiner();
-        },
-        { deep: true, debounce: 500, maxWait: 1000 }
-    )
-
-    watchDebounced(
-        () => costOfHw,
-        (newValue, oldValue) => {
-          emitMiner();
-        },
-        { deep: true, debounce: 500, maxWait: 1000 }
-    )
-
 
     const emitMiner = () => {
       const minerData = {
@@ -192,20 +160,35 @@ export default defineComponent({
       ctx.emit('setMiner', minerData);
     }
 
-    const getValueFromParams = (params, key, type = 'string') => {
-      return type === 'number' ? Number(params.get(key)) : params.get(key);
+    const decodeObject = (encryptedString, secretKey = 'salt') => {
+      const bytes = CryptoJS.AES.decrypt(encryptedString, secretKey);
+      const jsonString = bytes.toString(CryptoJS.enc.Utf8);
+      return JSON.parse(jsonString);
     }
 
     const setDataFromUrl = () => {
       let uri = window.location.search.substring(1);
       let params = new URLSearchParams(uri);
-      powerCost.value = getValueFromParams(params, 'powerCost', 'number');
-      power.value = getValueFromParams(params, 'power', 'number');
-      hashrate.value = getValueFromParams(params, 'hashrate', 'number');
-      quantity.value = getValueFromParams(params, 'quantity', 'number');
-      costOfHw.value = getValueFromParams(params, 'costOfHw', 'number');
-
-      emitMiner();
+      const hash = params.get('hash');
+      if (hash) {
+        const decodedURI = decodeURIComponent(hash);
+        const decodedMinerData = decodeObject(decodedURI);
+        powerCost.value = decodedMinerData.power_cost;
+        power.value = decodedMinerData.power;
+        hashrate.value = decodedMinerData.hash_rate;
+        quantity.value = decodedMinerData.quantity;
+        costOfHw.value = decodedMinerData.cost_of_hw;
+      }
+      const minerData = {
+        startDate: startDate.value,
+        endDate: endDate.value,
+        power_cost: powerCost.value,
+        power: power.value,
+        hash_rate : hashrate.value,
+        quantity: quantity.value,
+        cost_of_hw: costOfHw.value
+      }
+      ctx.emit('setMiner', minerData);
     }
 
     onBeforeMount(() => {
@@ -213,9 +196,7 @@ export default defineComponent({
     });
 
     onMounted(() => {
-      setTimeout(() => {
-        // setDataFromUrl();
-      }, 100);
+      setDataFromUrl();
     })
 
     const fetchFormData = () => {
@@ -227,7 +208,6 @@ export default defineComponent({
             const foundMiner = miners.value.find(item => item.miner_name === 'Whatsminer M32');
             if (foundMiner.miner_name) {
               miner.value = foundMiner;
-              setMinerData();
             }
           })
           .catch(function (error) {

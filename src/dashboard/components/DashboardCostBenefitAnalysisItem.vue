@@ -42,7 +42,7 @@ export default defineComponent({
 
     watch(
         () => props.change,
-        (newValue, oldValue) => {
+        () => {
           setChart();
         },
         { deep: true }

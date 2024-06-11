@@ -58,7 +58,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeMount, ref, watch } from "vue";
+import { defineComponent } from "vue";
 import DashboardArrow from "./DashboardArrow.vue";
 
 export default defineComponent({

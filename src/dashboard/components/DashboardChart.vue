@@ -96,22 +96,12 @@ export default defineComponent({
     const btcResponse = ref([]);
 
     watch(
-        () => props.miner,
-        (newValue, oldValue) => {
+        () => [props.miner, props.sellMode, currency],
+        () => {
           fetchChart();
         },
         { deep: true }
     )
-
-    watch(
-        () => props.sellMode,
-        (newValue, oldValue) => {
-          fetchChart();
-        },
-        { deep: true }
-    )
-
-    watch(() => currency, () => { fetchChart() }, { deep: true })
 
     onMounted(() => {
       fetchChart();

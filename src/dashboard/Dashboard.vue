@@ -1,6 +1,6 @@
 <template>
 
-  <div class="dashboard">
+  <div class="dashboard" v-loading="isHash && !loadedHash" element-loading-text="Loading data from link...">
 
     <div class="dashboard-row">
       <DashboardCalculator
@@ -10,6 +10,7 @@
       ></DashboardCalculator>
 
       <DashboardTradingAnalysis
+          v-if="loadedHash"
           :time-mode="timeMode"
           :miner="miner"
           :start-date="startDate"
@@ -23,6 +24,7 @@
     <div>
       <div class="dashboard-row">
         <DashboardChart
+            v-if="loadedHash"
             :height="330"
             :miner="miner"
             :start-date="startDate"
@@ -35,12 +37,14 @@
         <div>
           <div class="dashboard-stats">
             <DashboardChartStats
+                v-if="loadedHash"
                 :miner="miner"
                 :total-summary="totalSummary"
                 :currency="currency"
             />
 
             <DashboardCostBenefitAnalysis
+                v-if="loadedHash"
                 :miner="miner"
                 :start-date="startDate"
                 :end-date="endDate"
@@ -57,6 +61,7 @@
     <div class="ai-dashboard-share">
 
       <DashboardShare
+          v-if="loadedHash"
           :miner="miner"
           :start-date="startDate"
           :end-date="endDate"
@@ -66,6 +71,7 @@
       />
 
       <DashboardExportButton
+          v-if="loadedHash"
           :miner="miner"
           :start-date="startDate"
           :end-date="endDate"
@@ -81,7 +87,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref } from "vue";
+import { defineComponent, onMounted, reactive, ref } from "vue";
 import DashboardChart from '../dashboard/components/DashboardChart.vue';
 import DashboardChartStats from '../dashboard/components/DashboardChartStats.vue';
 import DashboardCostBenefitAnalysis from '../dashboard/components/DashboardCostBenefitAnalysis.vue';
@@ -105,7 +111,6 @@ export default defineComponent({
     DashboardShare
   },
   setup() {
-
     const loading = ref(false);
     const isCalculated = ref(false);
     const totalSummary = ref({
@@ -157,6 +162,25 @@ export default defineComponent({
       totalSummary.value = val;
     }
 
+    const isHash = ref(false);
+    const loadedHash = ref(false);
+
+    const checkHashLink = () => {
+      let uri = window.location.search.substring(1);
+      let params = new URLSearchParams(uri);
+      const hash = params.get('hash');
+      if (hash) {
+        isHash.value = true;
+        setTimeout(() => loadedHash.value = true, 1500);
+      } else {
+        loadedHash.value = true;
+      }
+    }
+
+    onMounted(() => {
+      checkHashLink();
+    })
+
     return {
       setMiner,
       miner,
@@ -171,7 +195,9 @@ export default defineComponent({
       setCurrency,
       loading,
       isCalculated,
-      totalSummary
+      totalSummary,
+      loadedHash,
+      isHash
     }
   }
 });

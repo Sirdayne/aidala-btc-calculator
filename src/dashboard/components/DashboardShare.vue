@@ -6,7 +6,6 @@
       <el-button type="primary"
                  @click="share()"
                  class="ai-el-button"
-                 disabled
       >
         Share
       </el-button>
@@ -15,9 +14,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onBeforeMount, watch, onMounted } from "vue";
+import { defineComponent, ref, onBeforeMount, watch, onMounted, toRaw } from "vue";
 import { CopyDocument } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
+import CryptoJS from 'crypto-js';
+import moment from "moment";
 
 export default defineComponent({
   name: "dashboard-share",
@@ -45,8 +46,24 @@ export default defineComponent({
       })
     }
 
+
+
+    const encodeObject = (obj, secretKey = 'salt') => {
+      const jsonString = JSON.stringify(obj);
+      const encrypted = CryptoJS.AES.encrypt(jsonString, secretKey).toString();
+      return encrypted;
+    }
+
     const share = () => {
-      console.log(props, ' PROPS');
+      let miner = toRaw(props.miner);
+      miner = {
+        startDate: moment(props.startDate).format("YYYY-MM-DD"),
+        endDate: moment(props.endDate).format("YYYY-MM-DD"),
+        ...miner
+      }
+      console.log(miner);
+      const hash = encodeURIComponent(encodeObject(miner));
+      link.value = `${location.host}?hash=${hash}`;
       copyClipboard();
     }
 
