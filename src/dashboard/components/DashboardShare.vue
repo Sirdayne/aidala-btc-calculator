@@ -63,7 +63,7 @@ export default defineComponent({
       }
       console.log(miner);
       const hash = encodeURIComponent(encodeObject(miner));
-      link.value = `${location.host}?hash=${hash}`;
+      link.value = `${window.location.href}?hash=${hash}`;
       copyClipboard();
     }
 
