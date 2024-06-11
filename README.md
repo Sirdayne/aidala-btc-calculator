@@ -25,7 +25,7 @@ npm i aidala-btc-calculator
 to use it just import js script from
 
 ```bash
-import 'aidala-btc-calculator.js'
+import 'aidala-btc-calculator'
 ```
 
 and run function with id parameter to mount calculator
