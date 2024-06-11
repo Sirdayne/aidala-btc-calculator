@@ -55460,7 +55460,7 @@ Arguments: ` + Array.prototype.slice.call(oe).join("") + `
           quantity: r.value,
           cost_of_hw: h.value
         };
-        console.log(O, " MINER"), t.emit("setMiner", O);
+        t.emit("setMiner", O);
       }, D = (O, I = "salt") => {
         const $ = F0.AES.decrypt(O, I).toString(F0.enc.Utf8);
         return JSON.parse($);
@@ -55468,19 +55468,9 @@ Arguments: ` + Array.prototype.slice.call(oe).join("") + `
         let O = window.location.search.substring(1);
         const F = new URLSearchParams(O).get("hash");
         if (F) {
-          const Y = decodeURIComponent(F), q = D(Y);
-          u.value = q.power_cost, l.value = q.power, i.value = q.hash_rate, r.value = q.quantity, h.value = q.cost_of_hw;
+          const $ = decodeURIComponent(F), Y = D($);
+          u.value = Y.power_cost, l.value = Y.power, i.value = Y.hash_rate, r.value = Y.quantity, h.value = Y.cost_of_hw, p.value = Ot(Y.startDate).toDate(), v.value = Ot(Y.endDate).toDate();
         }
-        const $ = {
-          startDate: p.value,
-          endDate: v.value,
-          power_cost: u.value,
-          power: l.value,
-          hash_rate: i.value,
-          quantity: r.value,
-          cost_of_hw: h.value
-        };
-        t.emit("setMiner", $);
       };
       mo(() => {
         N();
@@ -55933,7 +55923,7 @@ Arguments: ` + Array.prototype.slice.call(oe).join("") + `
             startDate: Ot(e.startDate).format("YYYY-MM-DD"),
             endDate: Ot(e.endDate).format("YYYY-MM-DD"),
             ...l
-          }, console.log(l);
+          };
           const u = encodeURIComponent(r(l));
           n.value = `${window.location.href}?hash=${u}`, a();
         }
