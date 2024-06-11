@@ -5,7 +5,9 @@
       <el-input v-model="link" disabled :suffix-icon="CopyDocument" class="dashboard-share-content__input"></el-input>
       <el-button type="primary"
                  @click="share()"
-                 class="ai-el-button">
+                 class="ai-el-button"
+                 disabled
+      >
         Share
       </el-button>
     </div>
@@ -33,7 +35,7 @@ export default defineComponent({
     currency: String,
   },
   setup(props, ctx) {
-    const link = ref('aidala.uk/dashboard');
+    const link = ref('aidala.uk/dashboard?quantity=10&hashrate=62&power=3348&powerCost=5.5');
 
     const copyClipboard = () => {
       navigator.clipboard.writeText(link.value);

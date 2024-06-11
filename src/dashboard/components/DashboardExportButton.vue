@@ -53,11 +53,11 @@ export default defineComponent({
 
       axios.post(`${host}${endpoint}`, body, {
             responseType: 'blob',
+            headers: {
+              'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            }
           })
           .then(function (response) {
-            console.log(response, ' response')
-            // const blob = new Blob([response.data], {type: "octet/stream"});
-            // saveAs(blob, 'exported.xlsx');
             saveFile(response.data);
           })
           .catch(function (error) {
