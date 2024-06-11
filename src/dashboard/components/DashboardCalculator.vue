@@ -156,7 +156,6 @@ export default defineComponent({
         quantity: quantity.value,
         cost_of_hw: costOfHw.value
       }
-      console.log(minerData, ' MINER')
       ctx.emit('setMiner', minerData);
     }
 
@@ -178,17 +177,9 @@ export default defineComponent({
         hashrate.value = decodedMinerData.hash_rate;
         quantity.value = decodedMinerData.quantity;
         costOfHw.value = decodedMinerData.cost_of_hw;
+        startDate.value = moment(decodedMinerData.startDate).toDate();
+        endDate.value = moment(decodedMinerData.endDate).toDate();
       }
-      const minerData = {
-        startDate: startDate.value,
-        endDate: endDate.value,
-        power_cost: powerCost.value,
-        power: power.value,
-        hash_rate : hashrate.value,
-        quantity: quantity.value,
-        cost_of_hw: costOfHw.value
-      }
-      ctx.emit('setMiner', minerData);
     }
 
     onBeforeMount(() => {

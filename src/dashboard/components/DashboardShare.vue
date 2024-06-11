@@ -61,7 +61,6 @@ export default defineComponent({
         endDate: moment(props.endDate).format("YYYY-MM-DD"),
         ...miner
       }
-      console.log(miner);
       const hash = encodeURIComponent(encodeObject(miner));
       link.value = `${window.location.href}?hash=${hash}`;
       copyClipboard();
