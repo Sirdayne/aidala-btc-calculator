@@ -11,6 +11,8 @@
 import { defineComponent, ref, onBeforeMount, watch } from "vue";
 import axios from 'axios';
 import moment from 'moment/moment';
+import { useCalculatorStore } from '@/stores';
+import { storeToRefs } from 'pinia';
 
 export default defineComponent({
   name: "dashboard-export-button",
@@ -19,11 +21,13 @@ export default defineComponent({
     startDate: String,
     endDate: String,
     timeMode: String,
-    sellMode: String,
     currency: String,
   },
   setup(props, ctx) {
     const loading = ref(false);
+
+    const calculatorStore = useCalculatorStore();
+    const { sellMode } = storeToRefs(calculatorStore);
 
     const exportXLS = () => {
       loading.value = true;
@@ -33,11 +37,12 @@ export default defineComponent({
       const minerValue = props && props.miner && props.miner ? props.miner : null;
       let body;
 
+
       if (minerValue) {
         body = {
           user_id: 0,
           time_mode: props.timeMode,
-          sell_mode: props.sellMode,
+          sell_mode: sellMode.value,
           currency: props.currency,
           time_filter: {
             start_date: moment(props.startDate).format("YYYY-MM-DDTHH:mm:ss"),

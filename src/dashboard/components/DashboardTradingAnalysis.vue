@@ -22,7 +22,7 @@
       >
         <div class="ai-form-check">
           <div class="dashboard-trading-analysis__option__check-line"></div>
-          <input class="ai-form-check-input" type="checkbox" :checked="sellMode === item.sell_mode" @change="setSellMode(item.sell_mode)"/>
+          <input class="ai-form-check-input" type="checkbox" :checked="sellMode === item.sell_mode" @change="checkSellMode(item.sell_mode)"/>
           <label class="ai-form-check-label" for="">
             {{ item.label }}
           </label>
@@ -52,6 +52,8 @@
 import { defineComponent, onBeforeMount, onMounted, reactive, ref, watch } from "vue";
 import axios from 'axios';
 import moment from "moment";
+import { useCalculatorStore } from '@/stores';
+import { storeToRefs } from 'pinia';
 
 export default defineComponent({
   name: "dashboard-trading-analysis",
@@ -62,8 +64,11 @@ export default defineComponent({
     endDate: String,
     currency: String,
   },
-  emits: ['emitSellMode', 'emitTotalsSummary'],
+  emits: ['emitTotalsSummary'],
   setup(props, ctx) {
+
+    const calculatorStore = useCalculatorStore();
+    const { sellMode } = storeToRefs(calculatorStore);
 
     const state = reactive({
       totals: [
@@ -94,8 +99,6 @@ export default defineComponent({
       ]
     })
 
-    const sellMode = ref('daily');
-
     watch(
         () => [props.currency, props.miner],
         () => {
@@ -104,19 +107,11 @@ export default defineComponent({
         { deep: true }
     )
 
-    // watch(
-    //     () => sellMode,
-    //     (newValue, oldValue) => {
-    //       fetchSummaries();
-    //     },
-    //     { deep: true }
-    // )
-
     watch(
         () => props.timeMode,
         (newValue, oldValue) => {
           if (newValue as any === 'daily') {
-            setSellMode('daily');
+            checkSellMode('daily');
           }
           fetchSummaries();
         },
@@ -161,7 +156,7 @@ export default defineComponent({
             const totals = response?.data?.data ? response.data.data : [];
             setStateTotals(totals);
             if (chooseBestProfit) {
-              setSellMode(state.totals[0].sell_mode);
+              checkSellMode(state.totals[0].sell_mode);
             }
           })
           .catch(function (error) {
@@ -170,9 +165,8 @@ export default defineComponent({
           });
     }
 
-    const setSellMode = (mode) => {
-      sellMode.value = mode;
-      ctx.emit('emitSellMode', mode);
+    const checkSellMode = (mode) => {
+      calculatorStore.setSellMode(mode);
       setTotalsFromSellMode(mode);
     }
 
@@ -228,7 +222,7 @@ export default defineComponent({
       formatCurrency,
       state,
       sellMode,
-      setSellMode
+      checkSellMode
     };
   },
 });

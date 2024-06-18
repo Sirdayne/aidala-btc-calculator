@@ -51,6 +51,8 @@ import { defineComponent, ref, onBeforeMount, watch } from "vue";
 import axios from 'axios';
 import DashboardCostBenefitAnalysisItem from './DashboardCostBenefitAnalysisItem.vue';
 import moment from 'moment/moment';
+import { useCalculatorStore } from '@/stores';
+import { storeToRefs } from 'pinia';
 
 export default defineComponent({
   name: "dashboard-cost-benefit-analysis",
@@ -62,7 +64,6 @@ export default defineComponent({
     startDate: String,
     endDate: String,
     timeMode: String,
-    sellMode: String,
     currency: String,
   },
   setup(props, ctx) {
@@ -70,12 +71,15 @@ export default defineComponent({
     const buyVsMinePayback = ref(0);
     const hardwarePayback = ref(0);
 
+    const calculatorStore = useCalculatorStore();
+    const { sellMode } = storeToRefs(calculatorStore);
+
     onBeforeMount(() => {
       fetchCostBenefitAnalysis();
     })
 
     watch(
-        () => [props.miner, props.timeMode, props.sellMode, props.currency],
+        () => [props.miner, props.timeMode, sellMode, props.currency],
         () => {
           fetchCostBenefitAnalysis();
         },
@@ -83,7 +87,7 @@ export default defineComponent({
     )
 
     const fetchCostBenefitAnalysis = () => {
-      if (props.timeMode === "daily" && props.sellMode === "monthly") {
+      if (props.timeMode === "daily" && sellMode.value === "monthly") {
         return;
       }
       const host = import.meta.env.VITE_APP_API_HOST;
@@ -96,7 +100,7 @@ export default defineComponent({
         body = {
           user_id: 0,
           time_mode: props.timeMode,
-          sell_mode: props.sellMode,
+          sell_mode: sellMode.value,
           currency: props.currency,
           time_filter: {
             start_date: moment(props.startDate).format("YYYY-MM-DDTHH:mm:ss"),

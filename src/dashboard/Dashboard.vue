@@ -4,7 +4,6 @@
 
     <div class="dashboard-row">
       <DashboardCalculator
-          :miner="miner"
           @setMiner="setMiner"
           :loading="loading"
       ></DashboardCalculator>
@@ -16,7 +15,6 @@
           :start-date="startDate"
           :end-date="endDate"
           :currency="currency"
-          @emit-sell-mode="setSellMode"
           @emit-totals-summary="setTotalsSummary"
       ></DashboardTradingAnalysis>
     </div>
@@ -29,7 +27,6 @@
             :miner="miner"
             :start-date="startDate"
             :end-date="endDate"
-            :sell-mode="sellMode"
             @emit-currency="setCurrency"
             @emit-time-mode="setTimeMode"
         ></DashboardChart>
@@ -49,7 +46,6 @@
                 :start-date="startDate"
                 :end-date="endDate"
                 :time-mode="timeMode"
-                :sell-mode="sellMode"
                 :currency="currency"
             />
           </div>
@@ -66,7 +62,6 @@
           :start-date="startDate"
           :end-date="endDate"
           :time-mode="timeMode"
-          :sell-mode="sellMode"
           :currency="currency"
       />
 
@@ -76,7 +71,6 @@
           :start-date="startDate"
           :end-date="endDate"
           :time-mode="timeMode"
-          :sell-mode="sellMode"
           :currency="currency"
       />
     </div>
@@ -129,7 +123,6 @@ export default defineComponent({
     });
 
     const timeMode = ref('monthly');
-    const sellMode = ref('daily');
     const currency = ref('BTC');
 
     const startDate = ref(moment('2023-01-01', 'YYYY-MM-DD').format("YYYY-MM-DDTHH:mm:ss"));
@@ -148,10 +141,6 @@ export default defineComponent({
 
     const setTimeMode = (val) => {
       timeMode.value = val;
-    }
-
-    const setSellMode = (val) => {
-      sellMode.value = val;
     }
 
     const setCurrency = (val) => {
@@ -187,9 +176,7 @@ export default defineComponent({
       startDate,
       endDate,
       timeMode,
-      sellMode,
       currency,
-      setSellMode,
       setTotalsSummary,
       setTimeMode,
       setCurrency,

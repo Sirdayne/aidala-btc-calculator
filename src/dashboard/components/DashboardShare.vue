@@ -19,6 +19,8 @@ import { CopyDocument } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import CryptoJS from 'crypto-js';
 import moment from "moment";
+import { useCalculatorStore } from '@/stores';
+import { storeToRefs } from 'pinia';
 
 export default defineComponent({
   name: "dashboard-share",
@@ -32,7 +34,6 @@ export default defineComponent({
     startDate: String,
     endDate: String,
     timeMode: String,
-    sellMode: String,
     currency: String,
   },
   setup(props, ctx) {
@@ -45,8 +46,6 @@ export default defineComponent({
         type: 'warning',
       })
     }
-
-
 
     const encodeObject = (obj, secretKey = 'salt') => {
       const jsonString = JSON.stringify(obj);

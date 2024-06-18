@@ -21,6 +21,7 @@
     "crypto-js": "^4.2.0",
     "element-plus": "^2.7.4",
     "moment": "^2.30.1",
+    "pinia": "^2.1.7",
     "vite-plugin-css-injected-by-js": "^3.5.1",
     "vue": "^3.4.21",
     "vue3-apexcharts": "^1.5.3"

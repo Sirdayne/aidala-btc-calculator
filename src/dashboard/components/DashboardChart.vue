@@ -65,6 +65,8 @@ import type VueApexCharts from "vue3-apexcharts";
 import DashboardChartOption from './DashboardChartOption.vue';
 import axios from "axios";
 import moment from "moment";
+import { useCalculatorStore } from '@/stores';
+import { storeToRefs } from 'pinia';
 
 export default defineComponent({
   name: "dashboard-chart",
@@ -73,7 +75,6 @@ export default defineComponent({
     miner: Object,
     startDate: String,
     endDate: String,
-    sellMode: String,
   },
   emits: ['emitTimeMode', 'emitCurrency'],
   components: { DashboardChartOption },
@@ -95,8 +96,11 @@ export default defineComponent({
     const difficultiesResponse = ref([]);
     const btcResponse = ref([]);
 
+    const calculatorStore = useCalculatorStore();
+    const { sellMode } = storeToRefs(calculatorStore);
+
     watch(
-        () => [props.miner, props.sellMode, currency],
+        () => [props.miner, sellMode, currency],
         () => {
           fetchChart();
         },
@@ -135,7 +139,7 @@ export default defineComponent({
     });
 
     const fetchChart = () => {
-      if (timeMode.value === "daily" && props.sellMode === "monthly") {
+      if (timeMode.value === "daily" && sellMode.value === "monthly") {
         return;
       }
       const host = import.meta.env.VITE_APP_API_HOST;
@@ -148,7 +152,7 @@ export default defineComponent({
       const body = {
         user_id: 0,
         time_mode: timeMode.value,
-        sell_mode: props.sellMode,
+        sell_mode: sellMode.value,
         currency: currency.value,
         time_filter: {
           start_date: moment(props.startDate).format("YYYY-MM-DDTHH:mm:ss"),
