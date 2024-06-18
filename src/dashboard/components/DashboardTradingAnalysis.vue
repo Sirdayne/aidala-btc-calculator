@@ -49,7 +49,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onBeforeMount, onMounted, reactive, ref, watch } from "vue";
+import { defineComponent, onMounted, reactive, watch } from "vue";
 import axios from 'axios';
 import moment from "moment";
 import { useCalculatorStore } from '@/stores';

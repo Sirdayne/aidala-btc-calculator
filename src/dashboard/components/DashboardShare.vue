@@ -14,13 +14,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onBeforeMount, watch, onMounted, toRaw } from "vue";
+import { defineComponent, ref, toRaw } from "vue";
 import { CopyDocument } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import CryptoJS from 'crypto-js';
 import moment from "moment";
-import { useCalculatorStore } from '@/stores';
-import { storeToRefs } from 'pinia';
 
 export default defineComponent({
   name: "dashboard-share",
