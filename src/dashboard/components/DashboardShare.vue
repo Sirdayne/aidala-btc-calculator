@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-share">
-    <div class="dashboard-share-title">Share results quickly</div>
+    <div class="dashboard-share-title">Share results</div>
     <div class="dashboard-share-content">
       <el-input v-model="link" disabled :suffix-icon="CopyDocument" class="dashboard-share-content__input"></el-input>
       <el-button type="primary"
