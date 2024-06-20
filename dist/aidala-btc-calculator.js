@@ -56172,7 +56172,7 @@ Arguments: ` + Array.prototype.slice.call(oe).join("") + `
         }
       };
     }
-  }), qme = { class: "dashboard-share" }, Zme = /* @__PURE__ */ ue("div", { class: "dashboard-share-title" }, "Share results quickly", -1), Jme = { class: "dashboard-share-content" };
+  }), qme = { class: "dashboard-share" }, Zme = /* @__PURE__ */ ue("div", { class: "dashboard-share-title" }, "Share results", -1), Jme = { class: "dashboard-share-content" };
   function eve(e, t, n, a, r, i) {
     const l = Ft("el-input"), u = Ft("el-button");
     return U(), ge("div", qme, [
