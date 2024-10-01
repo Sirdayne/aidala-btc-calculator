@@ -17,8 +17,9 @@
             :value="item"
             :label="item.miner_name"
             :key="item.id"
-            >{{ item?.miner_name }}</el-option
           >
+            {{ item?.miner_name }}
+          </el-option>
         </el-select>
       </div>
 
@@ -140,17 +141,35 @@ export default defineComponent({
 
     // Computed Property for Filtered Miners
     const filteredMiners = computed(() => {
-      return allMiners.value.filter((item) => {
+      // Filter miners based on release date
+      const filtered = allMiners.value.filter((item) => {
         return moment(item.release).isBefore(startDate.value);
       });
+
+      // Define the "OTHER" option
+      const otherOption = {
+        id: "other",
+        miner_name: "OTHER",
+        hashrate: 1,
+        power: 1,
+      };
+
+      // Append the "OTHER" option to the filtered miners
+      return [...filtered, otherOption];
     });
 
     // Function to Set Miner Data
     const setMinerData = () => {
-      if (miner.value) {
+      if (miner.value && miner.value.id === "other") {
+        // If "OTHER" is selected, set Hashrate and Power to 1
+        hashrate.value = 1;
+        power.value = 1;
+      } else if (miner.value) {
+        // If a specific miner is selected, set Hashrate and Power based on the miner
         hashrate.value = miner.value.hashrate;
         power.value = miner.value.power;
       } else {
+        // If no miner is selected, reset Hashrate and Power
         hashrate.value = 0;
         power.value = 0;
       }
@@ -324,6 +343,10 @@ export default defineComponent({
         })
         .catch(function (error) {
           console.log("Form Fetch Error: ", error);
+          ElMessage({
+            message: "Failed to load miners. Please try again later.",
+            type: "error",
+          });
         });
     };
 
