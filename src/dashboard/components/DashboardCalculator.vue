@@ -6,10 +6,20 @@
       <div class="dashboard-calculator-form__item">
         <div class="label">Model</div>
 
-        <el-select v-model="miner" @change="setMinerData()" aria-label="Select miner name" value-key="id">
-          <el-option v-for="item in miners" :value="item" :label="item.miner_name" :key="item.id">{{ item?.miner_name }}</el-option>
+        <el-select
+          v-model="miner"
+          @change="setMinerData()"
+          aria-label="Select miner name"
+          value-key="id"
+        >
+          <el-option
+            v-for="item in filteredMiners"
+            :value="item"
+            :label="item.miner_name"
+            :key="item.id"
+            >{{ item?.miner_name }}</el-option
+          >
         </el-select>
-
       </div>
 
       <div class="dashboard-calculator-form__item">
@@ -21,7 +31,11 @@
       <div class="dashboard-calculator-form__item">
         <div class="label">Hashrate (TH/s)</div>
 
-        <el-input-number v-model="hashrate" :min="1" placeholder="Hashrate (TH/s)" />
+        <el-input-number
+          v-model="hashrate"
+          :min="1"
+          placeholder="Hashrate (TH/s)"
+        />
       </div>
 
       <div class="dashboard-calculator-form__item">
@@ -33,33 +47,50 @@
       <div class="dashboard-calculator-form__item">
         <div class="label">Energy Cost (cents per kWh)</div>
 
-        <el-input-number v-model="powerCost" :min="0" :step="0.1" placeholder="Energy Cost (cents per kWh)" />
+        <el-input-number
+          v-model="powerCost"
+          :min="0"
+          :step="0.1"
+          placeholder="Energy Cost (cents per kWh)"
+        />
       </div>
 
       <div class="dashboard-calculator-form__item">
         <div class="label">Cost of hardware ($ per unit)</div>
 
-        <el-input-number v-model="costOfHw" :min="1" placeholder="Cost of hardware ($)" />
+        <el-input-number
+          v-model="costOfHw"
+          :min="1"
+          placeholder="Cost of hardware ($)"
+        />
       </div>
 
       <div class="dashboard-calculator-form__item">
         <div class="label">Start Date</div>
-        <el-date-picker @change="onStartDateChange" v-model="startDate"></el-date-picker>
+        <el-date-picker
+          @change="onStartDateChange"
+          v-model="startDate"
+        ></el-date-picker>
       </div>
 
       <div class="dashboard-calculator-form__item">
         <div class="label">End Date</div>
-        <el-date-picker @change="onEndDateChange" v-model="endDate"></el-date-picker>
+        <el-date-picker
+          @change="onEndDateChange"
+          v-model="endDate"
+        ></el-date-picker>
       </div>
 
       <div class="dashboard-calculator-form__item">
         <div class="label"></div>
 
-        <el-button type="primary"
-                   :disabled="loading"
-                   @click="emitMiner()"
-                   class="ai-el-button"
-                   :loading="loading">
+        <el-button
+          type="primary"
+          :disabled="loading"
+          @click="emitMiner()"
+          class="ai-el-button"
+          :loading="loading"
+        >
           Calculate
         </el-button>
       </div>
@@ -68,107 +99,176 @@
 </template>
 
 <script lang="ts">
-import CryptoJS from 'crypto-js';
-import { defineComponent, onBeforeMount, onMounted, ref } from "vue";
-import { ElMessage } from 'element-plus';
-import axios from 'axios';
+import CryptoJS from "crypto-js";
+import {
+  defineComponent,
+  onBeforeMount,
+  onMounted,
+  ref,
+  computed,
+  watch,
+} from "vue";
+import { ElMessage } from "element-plus";
+import axios from "axios";
 import moment from "moment";
-import { watchDebounced } from '@vueuse/core'
+import { watchDebounced } from "@vueuse/core";
 
 export default defineComponent({
   name: "dashboard-calculator",
   props: {
     loading: Boolean,
   },
-  emits: ['setMiner'],
+  emits: ["setMiner"],
   setup(props, ctx) {
-    const miners = ref([]);
-    const miner = ref({ id: '4f75b5a5-4187-412f-ad50-0c2533cba001', miner_name: 'Whatsminer M32', hashrate: 62, power: 3348 });
+    // Reactive Variables
+    const miner = ref({
+      id: "4f75b5a5-4187-412f-ad50-0c2533cba001",
+      miner_name: "Whatsminer M32",
+      hashrate: 62,
+      power: 3348,
+    });
     const quantity = ref(10);
     const hashrate = ref(62);
     const power = ref(3348);
     const powerCost = ref(5.5);
     const costOfHw = ref(500);
-    const startDate = ref(moment('2023-01-01', 'YYYY-MM-DD').toDate());
-    const endDate = ref(moment('2024-01-01', 'YYYY-MM-DD').toDate());
+    const startDate = ref(moment("2023-01-01", "YYYY-MM-DD").toDate());
+    const endDate = ref(moment("2024-01-01", "YYYY-MM-DD").toDate());
 
+    // Move allMiners inside setup
+    const allMiners = ref([]);
+
+    // Computed Property for Filtered Miners
+    const filteredMiners = computed(() => {
+      return allMiners.value.filter((item) => {
+        return moment(item.release).isBefore(startDate.value);
+      });
+    });
+
+    // Function to Set Miner Data
     const setMinerData = () => {
-      hashrate.value = miner.value.hashrate;
-      power.value = miner.value.power;
-    }
+      if (miner.value) {
+        hashrate.value = miner.value.hashrate;
+        power.value = miner.value.power;
+      } else {
+        hashrate.value = 0;
+        power.value = 0;
+      }
+    };
 
-    const startValidationDate = '2019-01-01';
-    const endValidationDate = moment(new Date).subtract(1, 'days');
+    // Validation Dates
+    const startValidationDate = "2019-01-01";
+    const endValidationDate = moment(new Date()).subtract(1, "days");
 
+    // Start Date Change Handler
     const onStartDateChange = () => {
       const isAfter = moment(startDate.value).isAfter(startValidationDate);
       const isBefore = moment(startDate.value).isBefore(endValidationDate);
       if (!isAfter) {
         startDate.value = moment(startValidationDate).toDate();
         ElMessage({
-          message: `Sorry, the earliest available date is ${moment(startValidationDate).format('LL')}`,
-          type: 'error',
-        })
+          message: `Sorry, the earliest available date is ${moment(
+            startValidationDate
+          ).format("LL")}`,
+          type: "error",
+        });
       }
       if (!isBefore) {
         startDate.value = moment(endValidationDate).toDate();
         ElMessage({
-          message: `Sorry, the earliest available date is ${moment(endValidationDate).format('LL')}`,
-          type: 'error',
-        })
+          message: `Sorry, the latest available date is ${moment(
+            endValidationDate
+          ).format("LL")}`,
+          type: "error",
+        });
       }
-    }
+    };
 
+    // End Date Change Handler
     const onEndDateChange = () => {
       const isAfter = moment(endDate.value).isAfter(startValidationDate);
       const isBefore = moment(endDate.value).isBefore(endValidationDate);
       if (!isAfter) {
         endDate.value = moment(startValidationDate).toDate();
         ElMessage({
-          message: `Sorry, the earliest available date is ${moment(startValidationDate).format('LL')}`,
-          type: 'error',
-        })
+          message: `Sorry, the earliest available date is ${moment(
+            startValidationDate
+          ).format("LL")}`,
+          type: "error",
+        });
       }
       if (!isBefore) {
         endDate.value = moment(endValidationDate).toDate();
         ElMessage({
-          message: `Sorry, the earliest available date is ${moment(endValidationDate).format('LL')}`,
-          type: 'error',
-        })
+          message: `Sorry, the latest available date is ${moment(
+            endValidationDate
+          ).format("LL")}`,
+          type: "error",
+        });
       }
-    }
+    };
 
+    // Watcher for Start Date
+    watch(startDate, () => {
+      // If the current miner is no longer available in the filtered list
+      if (
+        miner.value &&
+        !filteredMiners.value.some((m) => m.id === miner.value.id)
+      ) {
+        if (filteredMiners.value.length > 0) {
+          // Select the first available miner from the filtered list
+          miner.value = filteredMiners.value[0];
+          setMinerData();
+        } else {
+          // If no miners are available, reset miner and related values
+          miner.value = null;
+          hashrate.value = 0;
+          power.value = 0;
+        }
+      }
+    });
+
+    // Debounced Watcher for Input Changes
     watchDebounced(
-        () => [quantity, hashrate, power, powerCost, costOfHw],
-        () => {
-          emitMiner();
-        },
-        { deep: true, debounce: 500, maxWait: 1000 }
-    )
+      () => [
+        quantity.value,
+        hashrate.value,
+        power.value,
+        powerCost.value,
+        costOfHw.value,
+      ],
+      () => {
+        emitMiner();
+      },
+      { debounce: 500, maxWait: 1000 }
+    );
 
+    // Function to Emit Miner Data
     const emitMiner = () => {
       const minerData = {
         startDate: startDate.value,
         endDate: endDate.value,
         power_cost: powerCost.value,
         power: power.value,
-        hash_rate : hashrate.value,
+        hash_rate: hashrate.value,
         quantity: quantity.value,
-        cost_of_hw: costOfHw.value
-      }
-      ctx.emit('setMiner', minerData);
-    }
+        cost_of_hw: costOfHw.value,
+      };
+      ctx.emit("setMiner", minerData);
+    };
 
-    const decodeObject = (encryptedString, secretKey = 'salt') => {
+    // Function to Decode Data from URL
+    const decodeObject = (encryptedString, secretKey = "salt") => {
       const bytes = CryptoJS.AES.decrypt(encryptedString, secretKey);
       const jsonString = bytes.toString(CryptoJS.enc.Utf8);
       return JSON.parse(jsonString);
-    }
+    };
 
+    // Function to Set Data from URL
     const setDataFromUrl = () => {
       let uri = window.location.search.substring(1);
       let params = new URLSearchParams(uri);
-      const hash = params.get('hash');
+      const hash = params.get("hash");
       if (hash) {
         const decodedURI = decodeURIComponent(hash);
         const decodedMinerData = decodeObject(decodedURI);
@@ -180,32 +280,54 @@ export default defineComponent({
         startDate.value = moment(decodedMinerData.startDate).toDate();
         endDate.value = moment(decodedMinerData.endDate).toDate();
       }
-    }
+    };
 
+    // Fetch Miner Data on Before Mount
     onBeforeMount(() => {
       fetchFormData();
     });
 
+    // Set Data from URL on Mount
     onMounted(() => {
       setDataFromUrl();
-    })
+    });
 
+    // Function to Fetch Miner Data from API
     const fetchFormData = () => {
       const host = import.meta.env.VITE_APP_API_HOST;
 
-      axios.get(`${host}asics`)
-          .then(function (response) {
-            miners.value = response && response.data && response.data.items ? response.data.items : [];
-            const foundMiner = miners.value.find(item => item.miner_name === 'Whatsminer M32');
-            if (foundMiner.miner_name) {
-              miner.value = foundMiner;
-            }
-          })
-          .catch(function (error) {
-            console.log('Form Fetch Error: ', error);
-          });
-    }
+      axios
+        .get(`${host}asics`)
+        .then(function (response) {
+          allMiners.value =
+            response && response.data && response.data.items
+              ? response.data.items
+              : [];
 
+          // Attempt to find the default miner in the filtered list
+          const foundMiner = filteredMiners.value.find(
+            (item) => item.miner_name === "Whatsminer M32"
+          );
+          if (foundMiner) {
+            miner.value = foundMiner;
+            setMinerData();
+          } else if (filteredMiners.value.length > 0) {
+            // If default miner isn't available, select the first miner in the filtered list
+            miner.value = filteredMiners.value[0];
+            setMinerData();
+          } else {
+            // If no miners are available, set miner to null
+            miner.value = null;
+            hashrate.value = 0;
+            power.value = 0;
+          }
+        })
+        .catch(function (error) {
+          console.log("Form Fetch Error: ", error);
+        });
+    };
+
+    // Return Variables and Functions to Template
     return {
       miner,
       quantity,
@@ -218,8 +340,8 @@ export default defineComponent({
       onStartDateChange,
       onEndDateChange,
       emitMiner,
-      miners,
-      setMinerData
+      setMinerData,
+      filteredMiners,
     };
   },
 });
@@ -241,7 +363,7 @@ export default defineComponent({
   height: 32px;
   padding: 0;
   text-align: start;
-  transition: .3s linear;
+  transition: 0.3s linear;
 }
 
 .button-primary__loader_loading {
@@ -277,8 +399,8 @@ export default defineComponent({
   }
 
   .dashboard-calculator-form {
-
-    .el-date-editor.el-input, .el-date-editor.el-input__wrapper {
+    .el-date-editor.el-input,
+    .el-date-editor.el-input__wrapper {
       width: 180px;
     }
   }
@@ -288,7 +410,8 @@ export default defineComponent({
   .dashboard-calculator-form {
     display: block;
 
-    .el-date-editor.el-input, .el-date-editor.el-input__wrapper {
+    .el-date-editor.el-input,
+    .el-date-editor.el-input__wrapper {
       width: 100%;
     }
   }
