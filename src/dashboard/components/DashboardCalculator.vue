@@ -11,6 +11,7 @@
           @change="setMinerData()"
           aria-label="Select miner name"
           value-key="id"
+          filterable
         >
           <el-option
             v-for="item in filteredMiners"
