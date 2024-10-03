@@ -33,9 +33,13 @@
       <div class="dashboard-calculator-form__item">
         <div class="label">Hashrate (TH/s)</div>
 
-        <el-input-number v-model="hashrate" :min="0.1" 
-        values :step="0.1"
-        placeholder="Hashrate (TH/s)" />
+        <el-input-number
+          v-model="hashrate"
+          :min="0.1"
+          values
+          :step="0.1"
+          placeholder="Hashrate (TH/s)"
+        />
       </div>
 
       <div class="dashboard-calculator-form__item">
@@ -122,7 +126,7 @@ export default defineComponent({
   setup(props, ctx) {
     // Reactive Variables
     const miner = ref({
-      id: "4f75b5a5-4187-412f-ad50-0c2533cba001",
+      id: "6575be05-70c3-4195-8dc0-2502deb80a85",
       miner_name: "Whatsminer M32",
       hashrate: 62,
       power: 3348,
@@ -141,8 +145,18 @@ export default defineComponent({
     // Computed Property for Filtered Miners
     const filteredMiners = computed(() => {
       // Filter miners based on release date
-      const filtered = allMiners.value.filter((item) => {
+      let filtered = allMiners.value.filter((item) => {
         return moment(item.release).isBefore(startDate.value);
+      });
+
+      // Define the correct AsicID for Whatsminer M32
+      const defaultAsicID = "6575be05-70c3-4195-8dc0-2502deb80a85"; // Correct AsicID
+
+      // Sort miners, prioritizing Whatsminer M32
+      filtered = filtered.sort((a, b) => {
+        if (a.id === defaultAsicID) return -1;
+        if (b.id === defaultAsicID) return 1;
+        return a.miner_name.localeCompare(b.miner_name);
       });
 
       // Define the "OTHER" option
