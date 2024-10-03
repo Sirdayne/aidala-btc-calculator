@@ -179,7 +179,7 @@ export default defineComponent({
         power.value = 1;
       } else if (miner.value) {
         // If a specific miner is selected, set Hashrate and Power based on the miner
-        hashrate.value = parseFloat(miner.value.hashrate); // Ensure hashrate is a float
+        hashrate.value = miner.value.hashrate;
         power.value = miner.value.power;
       } else {
         // If no miner is selected, reset Hashrate and Power
