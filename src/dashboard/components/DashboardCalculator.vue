@@ -33,11 +33,9 @@
       <div class="dashboard-calculator-form__item">
         <div class="label">Hashrate (TH/s)</div>
 
-        <el-input-number
-          v-model="hashrate"
-          :min="1"
-          placeholder="Hashrate (TH/s)"
-        />
+        <el-input-number v-model="hashrate" :min="0.1" 
+        values :step="0.1"
+        placeholder="Hashrate (TH/s)" />
       </div>
 
       <div class="dashboard-calculator-form__item">
@@ -167,7 +165,7 @@ export default defineComponent({
         power.value = 1;
       } else if (miner.value) {
         // If a specific miner is selected, set Hashrate and Power based on the miner
-        hashrate.value = miner.value.hashrate;
+        hashrate.value = parseFloat(miner.value.hashrate); // Ensure hashrate is a float
         power.value = miner.value.power;
       } else {
         // If no miner is selected, reset Hashrate and Power
@@ -321,7 +319,10 @@ export default defineComponent({
         .then(function (response) {
           allMiners.value =
             response && response.data && response.data.items
-              ? response.data.items
+              ? response.data.items.map((item) => ({
+                  ...item,
+                  hashrate: parseFloat(item.hashrate), // Ensure hashrate is a float
+                }))
               : [];
 
           // Attempt to find the default miner in the filtered list
