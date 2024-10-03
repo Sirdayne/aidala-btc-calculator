@@ -1,6 +1,6 @@
 <template>
   <div class="ai-card dashboard-trading-analysis">
-    <h3 class="ai-title">Trading analysis (Basic)</h3>
+    <h3 class="ai-title">Trade Impact</h3>
 
     <div class="dashboard-trading-analysis__content">
       <div class="dashboard-trading-analysis__tabs">
