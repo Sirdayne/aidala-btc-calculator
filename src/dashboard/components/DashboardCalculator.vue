@@ -3,6 +3,7 @@
     <h3 class="ai-title">Historical Calculation</h3>
 
     <div class="dashboard-calculator-form">
+      <!-- Model Selection -->
       <div class="dashboard-calculator-form__item">
         <div class="label">Model</div>
 
@@ -24,67 +25,150 @@
         </el-select>
       </div>
 
+      <!-- Quantity Input -->
       <div class="dashboard-calculator-form__item">
         <div class="label">Quantity</div>
 
         <el-input-number v-model="quantity" :min="1" placeholder="Quantity" />
       </div>
 
+      <!-- Hashrate Field with Tooltip on Label and Input -->
       <div class="dashboard-calculator-form__item">
-        <div class="label">Hashrate (TH/s)</div>
+        <div class="label">
+          <el-tooltip
+            class="box-item"
+            effect="dark"
+            content="TH/s"
+            placement="top-end"
+          >
+            <span>Hashrate</span>
+          </el-tooltip>
+        </div>
 
-        <el-input-number
-          v-model="hashrate"
-          :min="0.1"
-          values
-          :step="0.1"
-          placeholder="Hashrate (TH/s)"
-        />
+        <el-tooltip
+          class="input-tooltip"
+          effect="dark"
+          content="TH/s"
+          placement="top"
+        >
+          <el-input-number
+            v-model="hashrate"
+            :min="0.1"
+            :step="0.1"
+            placeholder="Hashrate"
+            class="input-with-tooltip"
+          />
+        </el-tooltip>
       </div>
 
+      <!-- Power Field with Tooltip on Label and Input -->
       <div class="dashboard-calculator-form__item">
-        <div class="label">Power (W)</div>
+        <div class="label">
+          <el-tooltip
+            class="box-item"
+            effect="dark"
+            content="Watt"
+            placement="top-end"
+          >
+            <span>Power</span>
+          </el-tooltip>
+        </div>
 
-        <el-input-number v-model="power" :min="1" placeholder="Power (W)" />
+        <el-tooltip
+          class="input-tooltip"
+          effect="dark"
+          content="Watt"
+          placement="top"
+        >
+          <el-input-number
+            v-model="power"
+            :min="1"
+            placeholder="Power"
+            class="input-with-tooltip"
+          />
+        </el-tooltip>
       </div>
 
+      <!-- Energy Cost Field with Tooltip on Label and Input -->
       <div class="dashboard-calculator-form__item">
-        <div class="label">Energy Cost (cents per kWh)</div>
+        <div class="label">
+          <el-tooltip
+            class="box-item"
+            effect="dark"
+            content="$ cents per kWh"
+            placement="top-end"
+          >
+            <span>Energy Cost</span>
+          </el-tooltip>
+        </div>
 
-        <el-input-number
-          v-model="powerCost"
-          :min="0"
-          :step="0.1"
-          placeholder="Energy Cost (cents per kWh)"
-        />
+        <el-tooltip
+          class="input-tooltip"
+          effect="dark"
+          content="$ cents per kWh"
+          placement="top"
+        >
+          <el-input-number
+            v-model="powerCost"
+            :min="0"
+            :step="0.1"
+            placeholder="Energy Cost"
+            class="input-with-tooltip"
+          />
+        </el-tooltip>
       </div>
 
+      <!-- Cost of Hardware Field with Tooltip on Label and Input -->
       <div class="dashboard-calculator-form__item">
-        <div class="label">Cost of hardware ($ per unit)</div>
+        <div class="label">
+          <el-tooltip
+            class="box-item"
+            effect="dark"
+            content="$ per unit"
+            placement="top-end"
+          >
+            <span>Cost of hardware</span>
+          </el-tooltip>
+        </div>
 
-        <el-input-number
-          v-model="costOfHw"
-          :min="1"
-          placeholder="Cost of hardware ($)"
-        />
+        <el-tooltip
+          class="input-tooltip"
+          effect="dark"
+          content="$ per unit"
+          placement="top"
+        >
+          <el-input-number
+            v-model="costOfHw"
+            :min="1"
+            placeholder="Cost of hardware"
+            class="input-with-tooltip"
+          />
+        </el-tooltip>
       </div>
 
+      <!-- Start Date Picker -->
       <div class="dashboard-calculator-form__item">
         <div class="label">Start Date</div>
         <el-date-picker
           @change="onStartDateChange"
           v-model="startDate"
+          type="date"
+          placeholder="Select start date"
         ></el-date-picker>
       </div>
 
+      <!-- End Date Picker -->
       <div class="dashboard-calculator-form__item">
         <div class="label">End Date</div>
         <el-date-picker
           @change="onEndDateChange"
           v-model="endDate"
+          type="date"
+          placeholder="Select end date"
         ></el-date-picker>
       </div>
 
+      <!-- Calculate Button -->
       <div class="dashboard-calculator-form__item">
         <div class="label"></div>
 
@@ -139,7 +223,7 @@ export default defineComponent({
     const startDate = ref(moment("2023-01-01", "YYYY-MM-DD").toDate());
     const endDate = ref(moment("2024-01-01", "YYYY-MM-DD").toDate());
 
-    // Move allMiners inside setup
+    // All Miners Data
     const allMiners = ref([]);
 
     // Computed Property for Filtered Miners
@@ -430,6 +514,15 @@ export default defineComponent({
   line-height: 14px;
   height: 28px;
   overflow: hidden;
+}
+
+/* Optional: Styling for input tooltips */
+.input-tooltip {
+  width: 100%;
+}
+
+.input-with-tooltip {
+  width: 100%;
 }
 
 @media only screen and (max-width: 1700px) {
