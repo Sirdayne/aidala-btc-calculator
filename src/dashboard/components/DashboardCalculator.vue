@@ -5,7 +5,9 @@
     <div class="dashboard-calculator-form">
       <!-- Model Selection -->
       <div class="dashboard-calculator-form__item">
-        <div class="label">Model</div>
+        <div class="label">
+          <font-awesome-icon :icon="['fas', 'microchip']" class="icon mr-2" /> Model
+        </div>
 
         <el-select
           v-model="miner"
@@ -27,7 +29,9 @@
 
       <!-- Quantity Input -->
       <div class="dashboard-calculator-form__item">
-        <div class="label">Quantity</div>
+        <div class="label">
+          <font-awesome-icon :icon="['fas', 'boxes']" class="icon mr-2" /> Quantity
+        </div>
 
         <el-input-number v-model="quantity" :min="1" placeholder="Quantity" />
       </div>
@@ -35,22 +39,14 @@
       <!-- Hashrate Field with Tooltip on Label and Input -->
       <div class="dashboard-calculator-form__item">
         <div class="label">
-          <el-tooltip
-            class="box-item"
-            effect="dark"
-            content="TH/s"
-            placement="top-end"
-          >
-            <span>Hashrate</span>
+          <el-tooltip class="box-item" effect="dark" content="TH/s" placement="top-end">
+            <span>
+              <font-awesome-icon :icon="['fas', 'tachometer-alt']" class="icon mr-2" /> Hashrate
+            </span>
           </el-tooltip>
         </div>
 
-        <el-tooltip
-          class="input-tooltip"
-          effect="dark"
-          content="TH/s"
-          placement="top"
-        >
+        <el-tooltip class="input-tooltip" effect="dark" content="TH/s" placement="top">
           <el-input-number
             v-model="hashrate"
             :min="0.1"
@@ -64,22 +60,14 @@
       <!-- Power Field with Tooltip on Label and Input -->
       <div class="dashboard-calculator-form__item">
         <div class="label">
-          <el-tooltip
-            class="box-item"
-            effect="dark"
-            content="Watt"
-            placement="top-end"
-          >
-            <span>Power</span>
+          <el-tooltip class="box-item" effect="dark" content="Watt" placement="top-end">
+            <span>
+              <font-awesome-icon :icon="['fas', 'bolt']" class="icon mr-2" /> Power
+            </span>
           </el-tooltip>
         </div>
 
-        <el-tooltip
-          class="input-tooltip"
-          effect="dark"
-          content="Watt"
-          placement="top"
-        >
+        <el-tooltip class="input-tooltip" effect="dark" content="Watt" placement="top">
           <el-input-number
             v-model="power"
             :min="1"
@@ -92,22 +80,14 @@
       <!-- Energy Cost Field with Tooltip on Label and Input -->
       <div class="dashboard-calculator-form__item">
         <div class="label">
-          <el-tooltip
-            class="box-item"
-            effect="dark"
-            content="$ cents per kWh"
-            placement="top-end"
-          >
-            <span>Energy Cost</span>
+          <el-tooltip class="box-item" effect="dark" content="$ cents per kWh" placement="top-end">
+            <span>
+              <font-awesome-icon :icon="['fas', 'plug']" class="icon mr-2" /> Energy Cost
+            </span>
           </el-tooltip>
         </div>
 
-        <el-tooltip
-          class="input-tooltip"
-          effect="dark"
-          content="$ cents per kWh"
-          placement="top"
-        >
+        <el-tooltip class="input-tooltip" effect="dark" content="$ cents per kWh" placement="top">
           <el-input-number
             v-model="powerCost"
             :min="0"
@@ -121,22 +101,14 @@
       <!-- Cost of Hardware Field with Tooltip on Label and Input -->
       <div class="dashboard-calculator-form__item">
         <div class="label">
-          <el-tooltip
-            class="box-item"
-            effect="dark"
-            content="$ per unit"
-            placement="top-end"
-          >
-            <span>Cost of hardware</span>
+          <el-tooltip class="box-item" effect="dark" content="$ per unit" placement="top-end">
+            <span>
+              <font-awesome-icon :icon="['fas', 'dollar-sign']" class="icon mr-2" /> Cost of hardware
+            </span>
           </el-tooltip>
         </div>
 
-        <el-tooltip
-          class="input-tooltip"
-          effect="dark"
-          content="$ per unit"
-          placement="top"
-        >
+        <el-tooltip class="input-tooltip" effect="dark" content="$ per unit" placement="top">
           <el-input-number
             v-model="costOfHw"
             :min="1"
@@ -148,7 +120,9 @@
 
       <!-- Start Date Picker -->
       <div class="dashboard-calculator-form__item">
-        <div class="label">Start Date</div>
+        <div class="label">
+          <font-awesome-icon :icon="['fas', 'calendar-alt']" class="icon mr-2" /> Start
+        </div>
         <el-date-picker
           @change="onStartDateChange"
           v-model="startDate"
@@ -159,7 +133,9 @@
 
       <!-- End Date Picker -->
       <div class="dashboard-calculator-form__item">
-        <div class="label">End Date</div>
+        <div class="label">
+          <font-awesome-icon :icon="['fas', 'calendar-alt']" class="icon mr-2" /> End
+        </div>
         <el-date-picker
           @change="onEndDateChange"
           v-model="endDate"
@@ -179,7 +155,7 @@
           class="ai-el-button"
           :loading="loading"
         >
-          Calculate
+          <font-awesome-icon :icon="['fas', 'calculator']" class="icon mr-2 button-icon" /> Calculate
         </el-button>
       </div>
     </div>
@@ -200,9 +176,18 @@ import { ElMessage } from "element-plus";
 import axios from "axios";
 import moment from "moment";
 import { watchDebounced } from "@vueuse/core";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { faMicrochip, faBoxes, faTachometerAlt, faBolt, faPlug, faDollarSign, faCalendarAlt, faCalculator } from "@fortawesome/free-solid-svg-icons";
+import { library } from "@fortawesome/fontawesome-svg-core";
+
+// Add the icons to the library so they can be used throughout the component
+library.add(faMicrochip, faBoxes, faTachometerAlt, faBolt, faPlug, faDollarSign, faCalendarAlt, faCalculator);
 
 export default defineComponent({
   name: "dashboard-calculator",
+  components: {
+    FontAwesomeIcon,
+  },
   props: {
     loading: Boolean,
   },
@@ -523,6 +508,10 @@ export default defineComponent({
 
 .input-with-tooltip {
   width: 100%;
+}
+
+.button-icon {
+  margin-right: 8px;
 }
 
 @media only screen and (max-width: 1700px) {
