@@ -4,7 +4,7 @@
 
     <div class="dashboard-calculator-form">
       <!-- Model Selection -->
-      <div class="dashboard-calculator-form__item">
+      <div class="dashboard-calculator-form__item dashboard-calculator-form__item--model">
         <div class="label">
           <font-awesome-icon :icon="['fas', 'microchip']" class="icon mr-2" /> Model
         </div>
@@ -25,16 +25,36 @@
             {{ item?.miner_name }}
           </el-option>
         </el-select>
+
+        <!-- Calculate Top 5 Revenue Performers Button -->
+        <el-button
+          type="outline"
+          class="top-performers-button"
+          @click="showTopPerformersDialog = true"
+        >
+          <font-awesome-icon :icon="['fas', 'chart-line']" class="icon mr-2" /> Calculate Top 5 Revenue Performers
+        </el-button>
       </div>
 
-      <!-- Quantity Input -->
+      <!-- Power Field with Tooltip on Label and Input -->
       <div class="dashboard-calculator-form__item">
         <div class="label">
-          <font-awesome-icon :icon="['fas', 'boxes']" class="icon mr-2" /> Quantity
+          <el-tooltip class="box-item" effect="dark" content="Watt" placement="top-end">
+            <span>
+              <font-awesome-icon :icon="['fas', 'bolt']" class="icon mr-2" /> Power
+            </span>
+          </el-tooltip>
         </div>
 
-        <el-input-number v-model="quantity" :min="1" placeholder="Quantity" />
-      </div>
+        <el-tooltip class="input-tooltip" effect="dark" content="Watt" placement="top">
+          <el-input-number
+            v-model="power"
+            :min="1"
+            placeholder="Power"
+            class="input-with-tooltip"
+          />
+        </el-tooltip>
+      </div>      
 
       <!-- Hashrate Field with Tooltip on Label and Input -->
       <div class="dashboard-calculator-form__item">
@@ -57,24 +77,13 @@
         </el-tooltip>
       </div>
 
-      <!-- Power Field with Tooltip on Label and Input -->
+      <!-- Quantity Input -->
       <div class="dashboard-calculator-form__item">
         <div class="label">
-          <el-tooltip class="box-item" effect="dark" content="Watt" placement="top-end">
-            <span>
-              <font-awesome-icon :icon="['fas', 'bolt']" class="icon mr-2" /> Power
-            </span>
-          </el-tooltip>
+          <font-awesome-icon :icon="['fas', 'boxes']" class="icon mr-2" /> Quantity
         </div>
 
-        <el-tooltip class="input-tooltip" effect="dark" content="Watt" placement="top">
-          <el-input-number
-            v-model="power"
-            :min="1"
-            placeholder="Power"
-            class="input-with-tooltip"
-          />
-        </el-tooltip>
+        <el-input-number v-model="quantity" :min="1" placeholder="Quantity" />
       </div>
 
       <!-- Energy Cost Field with Tooltip on Label and Input -->
@@ -121,7 +130,7 @@
       <!-- Start Date Picker -->
       <div class="dashboard-calculator-form__item">
         <div class="label">
-          <font-awesome-icon :icon="['fas', 'calendar-alt']" class="icon mr-2" /> Start
+          <font-awesome-icon :icon="['fas', 'calendar-alt']" class="icon mr-2" /> Start Date
         </div>
         <el-date-picker
           @change="onStartDateChange"
@@ -134,7 +143,7 @@
       <!-- End Date Picker -->
       <div class="dashboard-calculator-form__item">
         <div class="label">
-          <font-awesome-icon :icon="['fas', 'calendar-alt']" class="icon mr-2" /> End
+          <font-awesome-icon :icon="['fas', 'calendar-alt']" class="icon mr-2" /> End Date
         </div>
         <el-date-picker
           @change="onEndDateChange"
@@ -159,6 +168,28 @@
         </el-button>
       </div>
     </div>
+
+    <!-- Dialog for Top 5 Revenue Performers -->
+    <el-dialog
+      title="Top 5 Revenue Performers"
+      :visible.sync="showTopPerformersDialog"
+      width="30%"
+    >
+      <p>Highest-grossing models based on current market conditions:</p>
+      <div v-if="isCalculatingTopPerformers" class="top-performers-loading">
+        <font-awesome-icon :icon="['fas', 'spinner']" class="icon spin mr-2" /> Calculating...
+      </div>
+      <div v-else>
+        <ul class="top-performers-list">
+          <li v-for="(performer, index) in topPerformers" :key="index" class="top-performers-item">
+            <font-awesome-icon :icon="['fas', 'medal']" class="icon mr-2" /> {{ performer.model }} - Revenue: {{ performer.revenue }}
+          </li>
+        </ul>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="showTopPerformersDialog = false">Close</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -177,11 +208,11 @@ import axios from "axios";
 import moment from "moment";
 import { watchDebounced } from "@vueuse/core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faMicrochip, faBoxes, faTachometerAlt, faBolt, faPlug, faDollarSign, faCalendarAlt, faCalculator } from "@fortawesome/free-solid-svg-icons";
+import { faMicrochip, faBoxes, faTachometerAlt, faBolt, faPlug, faDollarSign, faCalendarAlt, faCalculator, faChartLine, faSpinner, faMedal } from "@fortawesome/free-solid-svg-icons";
 import { library } from "@fortawesome/fontawesome-svg-core";
 
 // Add the icons to the library so they can be used throughout the component
-library.add(faMicrochip, faBoxes, faTachometerAlt, faBolt, faPlug, faDollarSign, faCalendarAlt, faCalculator);
+library.add(faMicrochip, faBoxes, faTachometerAlt, faBolt, faPlug, faDollarSign, faCalendarAlt, faCalculator, faChartLine, faSpinner, faMedal);
 
 export default defineComponent({
   name: "dashboard-calculator",
@@ -207,6 +238,15 @@ export default defineComponent({
     const costOfHw = ref(500);
     const startDate = ref(moment("2023-01-01", "YYYY-MM-DD").toDate());
     const endDate = ref(moment("2024-01-01", "YYYY-MM-DD").toDate());
+    const showTopPerformersDialog = ref(false);
+    const isCalculatingTopPerformers = ref(false);
+    const topPerformers = ref([
+      { model: "Antminer S19 XP", revenue: 0.00023456 },
+      { model: "Whatsminer M50S", revenue: 0.00022345 },
+      { model: "Avalon A1266", revenue: 0.00021234 },
+      { model: "Antminer S19j Pro", revenue: 0.00020123 },
+      { model: "Whatsminer M30S++", revenue: 0.00019012 },
+    ]);
 
     // All Miners Data
     const allMiners = ref([]);
@@ -450,6 +490,9 @@ export default defineComponent({
       emitMiner,
       setMinerData,
       filteredMiners,
+      showTopPerformersDialog,
+      isCalculatingTopPerformers,
+      topPerformers,
     };
   },
 });
@@ -458,19 +501,54 @@ export default defineComponent({
 <style lang="scss">
 .dashboard-calculator {
   flex: 80%;
+  padding: 20px; // Added padding for better spacing
+  background-color: #fff; // Optional: background color for contrast
+  border-radius: 8px; // Optional: rounded corners for aesthetics
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Optional: subtle shadow
 }
+
 .dashboard-calculator-form {
   display: flex;
-  justify-content: space-between;
   flex-wrap: wrap;
+  gap: 20px; // Use gap for consistent spacing between items
   padding-bottom: 15px;
+  justify-content: flex-start; // Align items to the start for better control
+}
+
+.dashboard-calculator-form__item {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 220px; // Allow items to grow and shrink with a base width
+  min-width: 200px; // Ensure a minimum width for better responsiveness
+}
+
+.dashboard-calculator-form__item--model {
+  flex: 2 1 450px; // Make the model selection wider if needed
+}
+
+.label {
+  margin-bottom: 5px; // Reduced margin for tighter spacing
+  color: rgba(94, 98, 120, 1);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5; // Use line-height for better text spacing
+}
+
+.el-select,
+.el-input-number,
+.el-date-picker {
+  width: 100%; // Ensure inputs take full width of their container
+}
+
+.top-performers-button {
+  margin-top: 10px;
 }
 
 .button-primary__loader {
-  width: 150px;
-  height: 32px;
+  width: 100%; // Make loader buttons responsive
+  height: 40px; // Increased height for better click area
   padding: 0;
-  text-align: start;
+  text-align: center;
   transition: 0.3s linear;
 }
 
@@ -479,29 +557,14 @@ export default defineComponent({
 }
 
 .button-primary__loader__label {
-  margin-left: calc(50% - 30px);
+  margin-left: auto; // Center label within the loader
+  margin-right: auto;
 }
 
 .loader-left {
   margin-left: 5px;
 }
 
-.dashboard-calculator-form__item {
-  margin-top: 15px;
-  width: 220px;
-}
-
-.dashboard-calculator-form__item .label {
-  margin-bottom: 3px;
-  color: rgba(94, 98, 120, 1);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 14px;
-  height: 28px;
-  overflow: hidden;
-}
-
-/* Optional: Styling for input tooltips */
 .input-tooltip {
   width: 100%;
 }
@@ -514,32 +577,49 @@ export default defineComponent({
   margin-right: 8px;
 }
 
+.dialog-footer {
+  text-align: right;
+}
+
+.top-performers-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.top-performers-item {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center; // Align icon and text vertically
+}
+
+.top-performers-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
+}
+
 @media only screen and (max-width: 1700px) {
   .dashboard-calculator-form__item {
-    width: 180px;
+    flex: 1 1 180px; // Adjust flex-basis for smaller screens
   }
 
-  .dashboard-calculator-form {
-    .el-date-editor.el-input,
-    .el-date-editor.el-input__wrapper {
-      width: 180px;
-    }
+  .dashboard-calculator-form__item--model {
+    flex: 2 1 350px;
   }
 }
 
 @media only screen and (max-width: 1100px) {
   .dashboard-calculator-form {
-    display: block;
-
-    .el-date-editor.el-input,
-    .el-date-editor.el-input__wrapper {
-      width: 100%;
-    }
+    flex-direction: column;
+    gap: 15px; // Reduce gap for single-column layout
   }
 
-  .dashboard-calculator-form__item {
-    margin-bottom: 15px;
-    width: 100%;
+  .dashboard-calculator-form__item,
+  .dashboard-calculator-form__item--model {
+    flex: 1 1 100%;
+    min-width: 100%;
   }
 
   .button-primary__loader {
