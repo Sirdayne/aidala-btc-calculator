@@ -28,11 +28,11 @@
 
         <!-- Calculate Top 5 Revenue Performers Button -->
         <el-button
-          type="outline"
+          type="info"
           class="top-performers-button"
           @click="showTopPerformersDialog = true"
         >
-          <font-awesome-icon :icon="['fas', 'chart-line']" class="icon mr-2" /> Calculate Top 5 Revenue Performers
+          <font-awesome-icon :icon="['fas', 'chart-line']" class="icon mr-2" /> Calculate Top 5 Performers
         </el-button>
       </div>
 
@@ -130,7 +130,7 @@
       <!-- Start Date Picker -->
       <div class="dashboard-calculator-form__item">
         <div class="label">
-          <font-awesome-icon :icon="['fas', 'calendar-alt']" class="icon mr-2" /> Start Date
+          <font-awesome-icon :icon="['fas', 'calendar-alt']" class="icon mr-2" /> Start
         </div>
         <el-date-picker
           @change="onStartDateChange"
@@ -143,7 +143,7 @@
       <!-- End Date Picker -->
       <div class="dashboard-calculator-form__item">
         <div class="label">
-          <font-awesome-icon :icon="['fas', 'calendar-alt']" class="icon mr-2" /> End Date
+          <font-awesome-icon :icon="['fas', 'calendar-alt']" class="icon mr-2" /> End
         </div>
         <el-date-picker
           @change="onEndDateChange"
@@ -171,48 +171,72 @@
 
     <!-- Dialog for Top 5 Revenue Performers -->
     <el-dialog
-      title="Top 5 Revenue Performers"
-      :visible.sync="showTopPerformersDialog"
-      width="30%"
+      title="Top 5 Performers"
+      v-model="showTopPerformersDialog"
+      width="40%"
     >
-      <p>Highest-grossing models based on current market conditions:</p>
-      <div v-if="isCalculatingTopPerformers" class="top-performers-loading">
-        <font-awesome-icon :icon="['fas', 'spinner']" class="icon spin mr-2" /> Calculating...
-      </div>
-      <div v-else>
-        <ul class="top-performers-list">
-          <li v-for="(performer, index) in topPerformers" :key="index" class="top-performers-item">
-            <font-awesome-icon :icon="['fas', 'medal']" class="icon mr-2" /> {{ performer.model }} - Revenue: {{ performer.revenue }}
-          </li>
-        </ul>
-      </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="showTopPerformersDialog = false">Close</el-button>
-      </span>
+      <template #default>
+        <p>This chart displays the highest-profit mining models based on the selected date range, comparing cumulative profits for each model:</p>
+        <div v-if="isCalculatingTopPerformers" class="top-performers-loading">
+          <font-awesome-icon :icon="['fas', 'spinner']" class="icon spin mr-2" /> Calculating...
+        </div>
+        <div v-else class="under-development-container">
+          <!-- Image indicating processing or under development -->
+          <img
+            src="@/assets/img/chart_inprocess.png"
+            alt="Chart In Process"
+            class="under-development-image"
+          />
+          <!-- Friendly Message -->
+          <p class="under-development-text">We're enhancing this feature. Stay tuned!</p>
+        </div>
+      </template>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showTopPerformersDialog = false">Close</el-button>
+        </span>
+      </template>
     </el-dialog>
   </div>
 </template>
 
 <script lang="ts">
-import CryptoJS from "crypto-js";
-import {
-  defineComponent,
-  onBeforeMount,
-  onMounted,
-  ref,
-  computed,
-  watch,
-} from "vue";
+import { defineComponent, ref, computed, watch, onBeforeMount, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import axios from "axios";
 import moment from "moment";
 import { watchDebounced } from "@vueuse/core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faMicrochip, faBoxes, faTachometerAlt, faBolt, faPlug, faDollarSign, faCalendarAlt, faCalculator, faChartLine, faSpinner, faMedal } from "@fortawesome/free-solid-svg-icons";
+import {
+  faMicrochip,
+  faBoxes,
+  faTachometerAlt,
+  faBolt,
+  faPlug,
+  faDollarSign,
+  faCalendarAlt,
+  faCalculator,
+  faChartLine,
+  faSpinner,
+  faMedal
+} from "@fortawesome/free-solid-svg-icons";
 import { library } from "@fortawesome/fontawesome-svg-core";
+import CryptoJS from "crypto-js";
 
-// Add the icons to the library so they can be used throughout the component
-library.add(faMicrochip, faBoxes, faTachometerAlt, faBolt, faPlug, faDollarSign, faCalendarAlt, faCalculator, faChartLine, faSpinner, faMedal);
+// Add the icons to the library
+library.add(
+  faMicrochip,
+  faBoxes,
+  faTachometerAlt,
+  faBolt,
+  faPlug,
+  faDollarSign,
+  faCalendarAlt,
+  faCalculator,
+  faChartLine,
+  faSpinner,
+  faMedal
+);
 
 export default defineComponent({
   name: "dashboard-calculator",
@@ -224,7 +248,6 @@ export default defineComponent({
   },
   emits: ["setMiner"],
   setup(props, ctx) {
-    // Reactive Variables
     const miner = ref({
       id: "6575be05-70c3-4195-8dc0-2502deb80a85",
       miner_name: "Whatsminer M32",
@@ -248,27 +271,21 @@ export default defineComponent({
       { model: "Whatsminer M30S++", revenue: 0.00019012 },
     ]);
 
-    // All Miners Data
     const allMiners = ref([]);
 
-    // Computed Property for Filtered Miners
     const filteredMiners = computed(() => {
-      // Filter miners based on release date
       let filtered = allMiners.value.filter((item) => {
         return moment(item.release).isBefore(startDate.value);
       });
 
-      // Define the correct AsicID for Whatsminer M32
-      const defaultAsicID = "6575be05-70c3-4195-8dc0-2502deb80a85"; // Correct AsicID
+      const defaultAsicID = "6575be05-70c3-4195-8dc0-2502deb80a85";
 
-      // Sort miners, prioritizing Whatsminer M32
       filtered = filtered.sort((a, b) => {
         if (a.id === defaultAsicID) return -1;
         if (b.id === defaultAsicID) return 1;
         return a.miner_name.localeCompare(b.miner_name);
       });
 
-      // Define the "OTHER" option
       const otherOption = {
         id: "other",
         miner_name: "OTHER",
@@ -276,32 +293,25 @@ export default defineComponent({
         power: 1,
       };
 
-      // Append the "OTHER" option to the filtered miners
       return [...filtered, otherOption];
     });
 
-    // Function to Set Miner Data
     const setMinerData = () => {
       if (miner.value && miner.value.id === "other") {
-        // If "OTHER" is selected, set Hashrate and Power to 1
         hashrate.value = 1;
         power.value = 1;
       } else if (miner.value) {
-        // If a specific miner is selected, set Hashrate and Power based on the miner
         hashrate.value = miner.value.hashrate;
         power.value = miner.value.power;
       } else {
-        // If no miner is selected, reset Hashrate and Power
         hashrate.value = 0;
         power.value = 0;
       }
     };
 
-    // Validation Dates
     const startValidationDate = "2019-01-01";
     const endValidationDate = moment(new Date()).subtract(1, "days");
 
-    // Start Date Change Handler
     const onStartDateChange = () => {
       const isAfter = moment(startDate.value).isAfter(startValidationDate);
       const isBefore = moment(startDate.value).isBefore(endValidationDate);
@@ -325,7 +335,6 @@ export default defineComponent({
       }
     };
 
-    // End Date Change Handler
     const onEndDateChange = () => {
       const isAfter = moment(endDate.value).isAfter(startValidationDate);
       const isBefore = moment(endDate.value).isBefore(endValidationDate);
@@ -349,19 +358,15 @@ export default defineComponent({
       }
     };
 
-    // Watcher for Start Date
     watch(startDate, () => {
-      // If the current miner is no longer available in the filtered list
       if (
         miner.value &&
         !filteredMiners.value.some((m) => m.id === miner.value.id)
       ) {
         if (filteredMiners.value.length > 0) {
-          // Select the first available miner from the filtered list
           miner.value = filteredMiners.value[0];
           setMinerData();
         } else {
-          // If no miners are available, reset miner and related values
           miner.value = null;
           hashrate.value = 0;
           power.value = 0;
@@ -369,7 +374,6 @@ export default defineComponent({
       }
     });
 
-    // Debounced Watcher for Input Changes
     watchDebounced(
       () => [
         quantity.value,
@@ -384,7 +388,6 @@ export default defineComponent({
       { debounce: 500, maxWait: 1000 }
     );
 
-    // Function to Emit Miner Data
     const emitMiner = () => {
       const minerData = {
         startDate: startDate.value,
@@ -398,14 +401,12 @@ export default defineComponent({
       ctx.emit("setMiner", minerData);
     };
 
-    // Function to Decode Data from URL
     const decodeObject = (encryptedString, secretKey = "salt") => {
       const bytes = CryptoJS.AES.decrypt(encryptedString, secretKey);
       const jsonString = bytes.toString(CryptoJS.enc.Utf8);
       return JSON.parse(jsonString);
     };
 
-    // Function to Set Data from URL
     const setDataFromUrl = () => {
       let uri = window.location.search.substring(1);
       let params = new URLSearchParams(uri);
@@ -423,17 +424,14 @@ export default defineComponent({
       }
     };
 
-    // Fetch Miner Data on Before Mount
     onBeforeMount(() => {
       fetchFormData();
     });
 
-    // Set Data from URL on Mount
     onMounted(() => {
       setDataFromUrl();
     });
 
-    // Function to Fetch Miner Data from API
     const fetchFormData = () => {
       const host = import.meta.env.VITE_APP_API_HOST;
 
@@ -444,11 +442,10 @@ export default defineComponent({
             response && response.data && response.data.items
               ? response.data.items.map((item) => ({
                   ...item,
-                  hashrate: parseFloat(item.hashrate), // Ensure hashrate is a float
+                  hashrate: parseFloat(item.hashrate),
                 }))
               : [];
 
-          // Attempt to find the default miner in the filtered list
           const foundMiner = filteredMiners.value.find(
             (item) => item.miner_name === "Whatsminer M32"
           );
@@ -456,11 +453,9 @@ export default defineComponent({
             miner.value = foundMiner;
             setMinerData();
           } else if (filteredMiners.value.length > 0) {
-            // If default miner isn't available, select the first miner in the filtered list
             miner.value = filteredMiners.value[0];
             setMinerData();
           } else {
-            // If no miners are available, set miner to null
             miner.value = null;
             hashrate.value = 0;
             power.value = 0;
@@ -475,7 +470,6 @@ export default defineComponent({
         });
     };
 
-    // Return Variables and Functions to Template
     return {
       miner,
       quantity,
@@ -501,43 +495,43 @@ export default defineComponent({
 <style lang="scss">
 .dashboard-calculator {
   flex: 80%;
-  padding: 20px; // Added padding for better spacing
-  background-color: #fff; // Optional: background color for contrast
-  border-radius: 8px; // Optional: rounded corners for aesthetics
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Optional: subtle shadow
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-calculator-form {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px; // Use gap for consistent spacing between items
+  gap: 20px;
   padding-bottom: 15px;
-  justify-content: flex-start; // Align items to the start for better control
+  justify-content: flex-start;
 }
 
 .dashboard-calculator-form__item {
   display: flex;
   flex-direction: column;
-  flex: 1 1 220px; // Allow items to grow and shrink with a base width
-  min-width: 200px; // Ensure a minimum width for better responsiveness
+  flex: 1 1 220px;
+  min-width: 200px;
 }
 
 .dashboard-calculator-form__item--model {
-  flex: 2 1 450px; // Make the model selection wider if needed
+  flex: 2 1 450px;
 }
 
 .label {
-  margin-bottom: 5px; // Reduced margin for tighter spacing
+  margin-bottom: 5px;
   color: rgba(94, 98, 120, 1);
   font-size: 14px;
   font-weight: 600;
-  line-height: 1.5; // Use line-height for better text spacing
+  line-height: 1.5;
 }
 
 .el-select,
 .el-input-number,
 .el-date-picker {
-  width: 100%; // Ensure inputs take full width of their container
+  width: 100%;
 }
 
 .top-performers-button {
@@ -545,8 +539,8 @@ export default defineComponent({
 }
 
 .button-primary__loader {
-  width: 100%; // Make loader buttons responsive
-  height: 40px; // Increased height for better click area
+  width: 100%;
+  height: 40px;
   padding: 0;
   text-align: center;
   transition: 0.3s linear;
@@ -557,7 +551,7 @@ export default defineComponent({
 }
 
 .button-primary__loader__label {
-  margin-left: auto; // Center label within the loader
+  margin-left: auto;
   margin-right: auto;
 }
 
@@ -590,7 +584,7 @@ export default defineComponent({
 .top-performers-item {
   margin-bottom: 10px;
   display: flex;
-  align-items: center; // Align icon and text vertically
+  align-items: center;
 }
 
 .top-performers-loading {
@@ -600,9 +594,30 @@ export default defineComponent({
   height: 80px;
 }
 
+/* Styles for the Under Development Message */
+.under-development-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.under-development-image {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 15px;
+}
+
+.under-development-text {
+  font-size: 16px;
+  color: #7e8299;
+  text-align: center;
+  font-weight: 500;
+}
+
 @media only screen and (max-width: 1700px) {
   .dashboard-calculator-form__item {
-    flex: 1 1 180px; // Adjust flex-basis for smaller screens
+    flex: 1 1 180px;
   }
 
   .dashboard-calculator-form__item--model {
@@ -613,7 +628,7 @@ export default defineComponent({
 @media only screen and (max-width: 1100px) {
   .dashboard-calculator-form {
     flex-direction: column;
-    gap: 15px; // Reduce gap for single-column layout
+    gap: 15px;
   }
 
   .dashboard-calculator-form__item,
@@ -624,6 +639,11 @@ export default defineComponent({
 
   .button-primary__loader {
     width: 100%;
+  }
+
+  /* Adjust dialog width for smaller screens */
+  .el-dialog {
+    width: 90% !important;
   }
 }
 </style>
