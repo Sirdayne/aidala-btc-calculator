@@ -15,7 +15,6 @@
           aria-label="Select miner name"
           value-key="id"
           filterable
-          clearable
           placeholder="Select a miner"
         >
           <el-option
