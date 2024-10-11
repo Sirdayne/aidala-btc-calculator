@@ -51,21 +51,28 @@
           </div>
         </div>
 
-        <div class="chart-times">
-          <div
-            class="ai-button"
-            @click="setTimeMode('monthly')"
-            :class="{ active: timeMode === 'monthly' }"
+        <div class="segmented-control">
+          <input 
+            type="radio" 
+            id="monthly" 
+            name="timeMode" 
+            :value="'monthly'" 
+            v-model="timeMode"
+            @change="setTimeMode('monthly')"
           >
-            Month
-          </div>
-          <div
-            class="ai-button"
-            @click="setTimeMode('daily')"
-            :class="{ active: timeMode === 'daily' }"
+          <label for="monthly" class="segmented-control__item">Month-by-Month</label>
+          
+          <input 
+            type="radio" 
+            id="daily" 
+            name="timeMode" 
+            :value="'daily'" 
+            v-model="timeMode"
+            @change="setTimeMode('daily')"
           >
-            Day
-          </div>
+          <label for="daily" class="segmented-control__item">Day-by-Day</label>
+          
+          <div class="segmented-control__color"></div>
         </div>
       </div>
     </div>
@@ -151,13 +158,13 @@ export default defineComponent({
         moment(props.endDate).format("ll")
       );
     });
+
     const setTimeMode = (val) => {
       timeMode.value = val;
       ctx.emit("emitTimeMode", val);
       fetchChart();
     };
 
-    // Ensure this is called when sell mode changes
     const updateSellMode = (newSellMode) => {
       sellMode.value = newSellMode;
       fetchChart();
@@ -176,10 +183,6 @@ export default defineComponent({
     const capitalizeFirstLetter = (str) => {
       return str.charAt(0).toUpperCase() + str.slice(1);
     };
-
-    onBeforeMount(() => {
-      // fetchChart();
-    });
 
     const fetchChart = () => {
       console.log("Fetching chart with sellMode:", sellMode.value);
@@ -728,72 +731,126 @@ export default defineComponent({
 });
 </script>
 
-<style lang="sass">
-.dashboard-chart
-  display: block
-  width: 100%
+<style lang="scss">
+.dashboard-chart {
+  display: block;
+  width: 100%;
 
-  .apexcharts-toolbar
-    display: none
+  .apexcharts-toolbar {
+    display: none;
+  }
+}
 
-.dashboard-chart-card-header
-  display: flex
-  justify-content: space-between
-  padding: 0 1.25rem
-  border-bottom: 1px solid var(--bs-card-border-color)
+.dashboard-chart-card-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  border-bottom: 1px solid var(--bs-card-border-color);
+}
 
-.chart-filters
-  display: flex
-  justify-content: space-between
+.chart-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-.chart-times
-  display: flex
+.chart-currencies {
+  display: flex;
 
-.chart-times .ai-button
-  color: #A1A5B7
-  background: rgba(241, 241, 242, 1)
-  margin-left: 5px
+  .ai-button {
+    color: #7E8299;
+    background: #fff;
+    margin-left: 5px;
 
-.chart-times .ai-button.active
-  color: #fff
-  background: #3E97FF
+    &.active {
+      color: #7E8299;
+      background: #F1F1F2;
+    }
+  }
+}
 
-.chart-currencies
-  display: flex
+.chart-options {
+  display: flex;
+}
 
-.chart-currencies .ai-button
-  color: #7E8299
-  background: #fff
-  margin-left: 5px
+.chart-filters__container {
+  padding: 0 1.25rem;
+  margin-top: 30px;
+}
 
-.chart-currencies .ai-button.active
-  color: #7E8299
-  background: #F1F1F2
+.segmented-control {
+  position: relative;
+  display: inline-flex;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  
+  input[type="radio"] {
+    display: none;
+  }
+  
+  &__item {
+    flex: 1;
+    padding: 8px 16px;
+    font-size: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: color 0.15s ease-in;
+    z-index: 1;
+    
+    &:hover {
+      color: #3E97FF;
+    }
+  }
+  
+  &__color {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background-color: #3E97FF;
+    transition: transform 0.15s ease-in;
+    border-radius: 8px;
+  }
+  
+  input[type="radio"]:checked + &__item {
+    color: white;
+  }
+  
+  input[type="radio"]:nth-of-type(1):checked ~ &__color {
+    transform: translateX(0%);
+  }
+  
+  input[type="radio"]:nth-of-type(2):checked ~ &__color {
+    transform: translateX(100%);
+  }
+}
 
-.chart-options
-  display: flex
+@media only screen and (max-width: 700px) {
+  .chart-filters__container {
+    margin-top: 0px;
+  }
 
-.chart-filters__container
-  padding: 0 1.25rem
-  margin-top: 30px
+  .dashboard-chart-card-header {
+    display: block;
+  }
 
+  .chart-filters {
+    display: block;
+  }
 
-@media only screen and (max-width: 700px)
-  .chart-filters__container
-    margin-top: 0px
+  .chart-options, .chart-currencies {
+    display: block;
+  }
 
-  .dashboard-chart-card-header
-    display: block
+  .segmented-control {
+    margin-top: 20px;
+    width: 100%;
+  }
 
-  .chart-filters
-    display: block
-
-  .chart-options, .chart-times, .chart-currencies
-    display: block
-
-  .chart-times
-    margin-top: 20px
-
-  .chart-times .ai-button, .chart-currencies .ai-button
-    margin: 5px 0
+  .chart-currencies .ai-button {
+    margin: 5px 0;
+  }
+}
 </style>
