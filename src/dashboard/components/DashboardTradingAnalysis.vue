@@ -18,7 +18,6 @@
       <div v-for="(item, index) in state.totals"
            :key="index" class="dashboard-trading-analysis__option"
            :class="{'dashboard-trading-analysis__option_active': sellMode === item.sell_mode }"
-           v-show="timeMode !== 'daily' || item.sell_mode === 'daily'"
       >
         <div class="ai-form-check">
           <div class="dashboard-trading-analysis__option__check-line"></div>
@@ -100,19 +99,8 @@ export default defineComponent({
     })
 
     watch(
-        () => [props.currency, props.miner],
+        () => [props.currency, props.miner, props.timeMode],
         () => {
-          fetchSummaries();
-        },
-        { deep: true }
-    )
-
-    watch(
-        () => props.timeMode,
-        (newValue, oldValue) => {
-          if (newValue as any === 'daily') {
-            checkSellMode('daily');
-          }
           fetchSummaries();
         },
         { deep: true }
@@ -122,11 +110,7 @@ export default defineComponent({
       fetchSummaries(true);
     });
 
-
     const fetchSummaries = (chooseBestProfit = false) => {
-      if (props.timeMode === "daily" && sellMode.value === "monthly") {
-        return;
-      }
       const host = import.meta.env.VITE_APP_API_HOST;
       const endpoint = 'summaries';
 
@@ -161,11 +145,11 @@ export default defineComponent({
           })
           .catch(function (error) {
             console.log('Chart Error: ', error);
-            // setRandomChart();
           });
     }
 
     const checkSellMode = (mode) => {
+      console.log('Selected sellMode:', mode);
       calculatorStore.setSellMode(mode);
       setTotalsFromSellMode(mode);
     }

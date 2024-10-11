@@ -27,6 +27,8 @@
             :miner="miner"
             :start-date="startDate"
             :end-date="endDate"
+            :time-mode="timeMode"
+            :sell-mode="sellMode"
             @emit-currency="setCurrency"
             @emit-time-mode="setTimeMode"
         ></DashboardChart>
@@ -91,6 +93,9 @@ import DashboardMarketData from '../dashboard/components/DashboardMarketData.vue
 import DashboardTradingAnalysis from '../dashboard/components/DashboardTradingAnalysis.vue';
 import DashboardExportButton from '@/dashboard/components/DashboardExportButton.vue';
 import DashboardShare from '@/dashboard/components/DashboardShare.vue';
+import { useCalculatorStore } from "@/stores";
+import { storeToRefs } from "pinia";
+
 
 export default defineComponent({
   name: "dashboard-main",
@@ -154,6 +159,14 @@ export default defineComponent({
     const isHash = ref(false);
     const loadedHash = ref(false);
 
+    const calculatorStore = useCalculatorStore();
+    const { sellMode } = storeToRefs(calculatorStore);
+
+    // If sellMode is not initialized, set a default value
+    if (!sellMode.value) {
+      sellMode.value = 'daily'; // or your preferred default
+    }
+
     const checkHashLink = () => {
       let uri = window.location.search.substring(1);
       let params = new URLSearchParams(uri);
@@ -184,6 +197,7 @@ export default defineComponent({
       isCalculated,
       totalSummary,
       loadedHash,
+      sellMode,
       isHash
     }
   }

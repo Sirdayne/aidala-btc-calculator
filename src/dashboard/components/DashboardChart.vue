@@ -8,28 +8,30 @@
 
       <div class="chart-options">
         <DashboardChartOption
-            @click="setActiveOption('revenue')"
-            :active="activeOption === 'revenue'"
-            label="Revenue"
-            >
+          @click="setActiveOption('revenue')"
+          :active="activeOption === 'revenue'"
+          label="Revenue"
+        >
           <template v-slot:chart-option-img>
-            <img src="@/assets/img/chart_revenue.svg">
+            <img src="@/assets/img/chart_revenue.svg" />
           </template>
         </DashboardChartOption>
         <DashboardChartOption
-            @click="setActiveOption('cost')"
-            :active="activeOption === 'cost'"
-            label="Costs">
+          @click="setActiveOption('cost')"
+          :active="activeOption === 'cost'"
+          label="Costs"
+        >
           <template v-slot:chart-option-img>
-            <img src="@/assets/img/chart_costs.svg">
+            <img src="@/assets/img/chart_costs.svg" />
           </template>
         </DashboardChartOption>
         <DashboardChartOption
-            @click="setActiveOption('profit')"
-            :active="activeOption === 'profit'"
-            label="Profit">
+          @click="setActiveOption('profit')"
+          :active="activeOption === 'profit'"
+          label="Profit"
+        >
           <template v-slot:chart-option-img>
-            <img src="@/assets/img/chart_profit.svg">
+            <img src="@/assets/img/chart_profit.svg" />
           </template>
         </DashboardChartOption>
       </div>
@@ -38,35 +40,62 @@
     <div class="chart-filters__container">
       <div class="card-toolbar chart-filters">
         <div class="chart-currencies">
-          <div v-for="(item, index) in currencies" :key="index" class="ai-button" @click="setCurrency(item)" :class="{'active': currency === item}">{{ item }}</div>
+          <div
+            v-for="(item, index) in currencies"
+            :key="index"
+            class="ai-button"
+            @click="setCurrency(item)"
+            :class="{ active: currency === item }"
+          >
+            {{ item }}
+          </div>
         </div>
 
         <div class="chart-times">
-          <div class="ai-button" @click="setTimeMode('monthly')" :class="{'active': timeMode === 'monthly'}">Month</div>
-          <div class="ai-button" @click="setTimeMode('daily')" :class="{'active': timeMode === 'daily'}">Day</div>
+          <div
+            class="ai-button"
+            @click="setTimeMode('monthly')"
+            :class="{ active: timeMode === 'monthly' }"
+          >
+            Month
+          </div>
+          <div
+            class="ai-button"
+            @click="setTimeMode('daily')"
+            :class="{ active: timeMode === 'daily' }"
+          >
+            Day
+          </div>
         </div>
       </div>
     </div>
 
     <apexchart
-        ref="chartRef"
-        type="bar"
-        :options="chart"
-        :series="series"
-        :height="height"
+      ref="chartRef"
+      type="bar"
+      :options="chart"
+      :series="series"
+      :height="height"
     ></apexchart>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onBeforeMount, onMounted, ref, watch } from "vue";
+import {
+  computed,
+  defineComponent,
+  onBeforeMount,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 import type { ApexOptions } from "apexcharts";
 import type VueApexCharts from "vue3-apexcharts";
-import DashboardChartOption from './DashboardChartOption.vue';
+import DashboardChartOption from "./DashboardChartOption.vue";
 import axios from "axios";
 import moment from "moment";
-import { useCalculatorStore } from '@/stores';
-import { storeToRefs } from 'pinia';
+import { useCalculatorStore } from "@/stores";
+import { storeToRefs } from "pinia";
 
 export default defineComponent({
   name: "dashboard-chart",
@@ -76,7 +105,7 @@ export default defineComponent({
     startDate: String,
     endDate: String,
   },
-  emits: ['emitTimeMode', 'emitCurrency'],
+  emits: ["emitTimeMode", "emitCurrency"],
   components: { DashboardChartOption },
   setup(props, ctx) {
     const chartRef = ref<typeof VueApexCharts | null>(null);
@@ -84,14 +113,14 @@ export default defineComponent({
     const timeMode = ref("monthly");
     const activeOption = ref("revenue");
 
-    const dateRange = ref('');
+    const dateRange = ref("");
     const series = ref([]);
     const categories = ref([]);
 
     const chartLabels = ref([]);
 
-    const currencies = ref(['USD', 'BTC']);
-    const currency = ref('BTC');
+    const currencies = ref(["USD", "BTC"]);
+    const currency = ref("BTC");
 
     const difficultiesResponse = ref([]);
     const btcResponse = ref([]);
@@ -100,55 +129,68 @@ export default defineComponent({
     const { sellMode } = storeToRefs(calculatorStore);
 
     watch(
-        () => [props.miner, sellMode, currency],
-        () => {
-          fetchChart();
-        },
-        { deep: true }
-    )
+      () => [props.miner, sellMode.value, currency.value, timeMode.value],
+      (newValues, oldValues) => {
+        console.log("Watcher triggered with values:", {
+          newValues,
+          oldValues,
+        });
+        fetchChart();
+      },
+      { deep: true }
+    );
 
     onMounted(() => {
       fetchChart();
-    })
+    });
 
     const getDates = computed(() => {
-      return moment(props.startDate).format('ll') + ' - ' + moment(props.endDate).format('ll');
+      return (
+        moment(props.startDate).format("ll") +
+        " - " +
+        moment(props.endDate).format("ll")
+      );
     });
     const setTimeMode = (val) => {
       timeMode.value = val;
-      ctx.emit('emitTimeMode', val);
+      ctx.emit("emitTimeMode", val);
       fetchChart();
-    }
+    };
+
+    // Ensure this is called when sell mode changes
+    const updateSellMode = (newSellMode) => {
+      sellMode.value = newSellMode;
+      fetchChart();
+    };
 
     const setCurrency = (item) => {
       currency.value = item;
-      ctx.emit('emitCurrency', item);
-    }
+      ctx.emit("emitCurrency", item);
+    };
 
     const setActiveOption = (option) => {
       activeOption.value = option;
       fetchChart();
-    }
+    };
 
     const capitalizeFirstLetter = (str) => {
       return str.charAt(0).toUpperCase() + str.slice(1);
-    }
+    };
 
     onBeforeMount(() => {
       // fetchChart();
     });
 
     const fetchChart = () => {
-      if (timeMode.value === "daily" && sellMode.value === "monthly") {
-        return;
-      }
+      console.log("Fetching chart with sellMode:", sellMode.value);
       const host = import.meta.env.VITE_APP_API_HOST;
       const endpoint = activeOption.value;
 
       difficultiesResponse.value = [];
       btcResponse.value = [];
 
-      const minerValue = props && props.miner && props.miner ? props.miner : null;
+      const minerValue =
+        props && props.miner && props.miner ? props.miner : null;
       const body = {
         user_id: 0,
         time_mode: timeMode.value,
@@ -156,76 +198,85 @@ export default defineComponent({
         currency: currency.value,
         time_filter: {
           start_date: moment(props.startDate).format("YYYY-MM-DDTHH:mm:ss"),
-          end_date: moment(props.endDate).format("YYYY-MM-DDTHH:mm:ss")
+          end_date: moment(props.endDate).format("YYYY-MM-DDTHH:mm:ss"),
         },
         cost_of_hw: minerValue.cost_of_hw,
         hash_rate: minerValue.hash_rate,
         power: minerValue.power,
         power_cost: minerValue.power_cost,
-        quantity: minerValue.quantity
-      }
+        quantity: minerValue.quantity,
+      };
 
-      if ((activeOption.value === 'revenue' && currency.value === 'USD')) {
-        Promise.all([axios.post(`${host}${endpoint}`, body), axios.post(`${host}difficulties`, body), axios.post(`${host}btc_prices`, body)]).then((values) => {
+      if (activeOption.value === "revenue" && currency.value === "USD") {
+        Promise.all([
+          axios.post(`${host}${endpoint}`, body),
+          axios.post(`${host}difficulties`, body),
+          axios.post(`${host}btc_prices`, body),
+        ]).then((values) => {
           const response = values[0].data.data;
           difficultiesResponse.value = values[1].data;
           btcResponse.value = values[2].data;
           setChart(response);
         });
-      } else if (activeOption.value === 'cost' && currency.value === 'BTC') {
-        Promise.all([axios.post(`${host}${endpoint}`, body), axios.post(`${host}btc_prices`, body)]).then((values) => {
+      } else if (activeOption.value === "cost" && currency.value === "BTC") {
+        Promise.all([
+          axios.post(`${host}${endpoint}`, body),
+          axios.post(`${host}btc_prices`, body),
+        ]).then((values) => {
           const response = values[0].data.data;
           btcResponse.value = values[1].data;
           setChart(response);
         });
-      } else if (activeOption.value === 'revenue' && currency.value === 'BTC') {
-        Promise.all([axios.post(`${host}${endpoint}`, body), axios.post(`${host}difficulties`, body)]).then((values) => {
+      } else if (activeOption.value === "revenue" && currency.value === "BTC") {
+        Promise.all([
+          axios.post(`${host}${endpoint}`, body),
+          axios.post(`${host}difficulties`, body),
+        ]).then((values) => {
           const response = values[0].data.data;
           difficultiesResponse.value = values[1].data;
           setChart(response);
         });
       } else {
-        axios.post(`${host}${endpoint}`, body)
-            .then(function (response) {
-              setChart(response.data.data);
-            })
-            .catch(function (error) {
-            });
+        axios
+          .post(`${host}${endpoint}`, body)
+          .then(function (response) {
+            setChart(response.data.data);
+          })
+          .catch(function (error) {});
       }
-    }
+    };
 
     const getCategoryLabel = (time) => {
-      return moment(time).format("YYYY-MM-DDTHH:mm:ss")
-    }
+      return moment(time).format("YYYY-MM-DDTHH:mm:ss");
+    };
 
     const refreshChart = () => {
       if (!chartRef.value) {
         return;
       }
 
-      chartRef.value.updateOptions(chartOptions());
+      chartRef.value.updateOptions(chartOptions(), true, true, true);
     };
 
     const getChartLabel = (val) => {
-      const found = chartLabels.value.find(item => item.time === val);
+      const found = chartLabels.value.find((item) => item.time === val);
       return found.label;
-    }
+    };
 
     const formatYAxis = (val) => {
-      return val.toLocaleString('en-US', {
+      return val.toLocaleString("en-US", {
         maximumFractionDigits: 2,
-        notation: 'compact',
-        compactDisplay: 'short'
+        notation: "compact",
+        compactDisplay: "short",
       });
     };
 
     const labelColor = "#adb5bd";
     const borderColor = "#e9ecef";
-    const primaryColor = '#0d6efd';
-    const secondaryColor = 'rgba(71 ,95 ,190 , 0.2)';
-    const btcColor = 'rgba(71,190,178,0.2)';
-    const halvingColor = 'rgba(190,71,111,0.2)';
-
+    const primaryColor = "#0d6efd";
+    const secondaryColor = "rgba(71 ,95 ,190 , 0.2)";
+    const btcColor = "rgba(71,190,178,0.2)";
+    const halvingColor = "rgba(190,71,111,0.2)";
 
     const yaxis = ref([
       {
@@ -249,7 +300,7 @@ export default defineComponent({
         show: true,
         opposite: true,
         title: {
-          text: 'Difficulty',
+          text: "Difficulty",
           style: {
             color: secondaryColor,
           },
@@ -268,38 +319,57 @@ export default defineComponent({
     const colors = ref([primaryColor, secondaryColor]);
 
     const setChart = (response) => {
+      // Declare arrays
       const data = [];
       const difficultyData = [];
       const btcData = [];
-      categories.value = [];
-      response.forEach(item => {
+
+      // Reset other arrays
+      categories.value.length = 0;
+      chartLabels.value.length = 0;
+
+      response.forEach((item) => {
         data.push(Number(item.value));
-        const foundDifficulty = difficultiesResponse.value.find(diff => diff.label === item.label);
+
+        const foundDifficulty = difficultiesResponse.value.find(
+          (diff) => diff.label === item.label
+        );
         if (foundDifficulty) {
           difficultyData.push(Number(foundDifficulty.value));
         }
-        const foundBtc = btcResponse.value.find(btc => btc.label === item.label);
+
+        const foundBtc = btcResponse.value.find(
+          (btc) => btc.label === item.label
+        );
         if (foundBtc) {
           btcData.push(Number(foundBtc.value));
         }
+
         categories.value.push(getCategoryLabel(item.time));
-        chartLabels.value.push({ time: moment(item.time).valueOf(), label: item.label });
+        chartLabels.value.push({
+          time: moment(item.time).valueOf(),
+          label: item.label,
+        });
       });
 
-      if (activeOption.value === 'revenue' && currency.value === 'USD') {
-        series.value = [{
-          name: capitalizeFirstLetter(activeOption.value),
-          data,
-          type: 'bar'
-        }, {
-          name: 'Difficulty',
-          data: difficultyData,
-          type: 'area'
-        }, {
-          name: 'BTC Price',
-          data: btcData,
-          type: 'area'
-        }];
+      if (activeOption.value === "revenue" && currency.value === "USD") {
+        series.value = [
+          {
+            name: capitalizeFirstLetter(activeOption.value),
+            data,
+            type: "bar",
+          },
+          {
+            name: "Difficulty",
+            data: difficultyData,
+            type: "area",
+          },
+          {
+            name: "BTC Price",
+            data: btcData,
+            type: "area",
+          },
+        ];
 
         yaxis.value = [
           {
@@ -323,7 +393,7 @@ export default defineComponent({
             show: true,
             opposite: true,
             title: {
-              text: 'Difficulty',
+              text: "Difficulty",
               style: {
                 color: secondaryColor,
               },
@@ -342,7 +412,7 @@ export default defineComponent({
             show: true,
             opposite: true,
             title: {
-              text: 'BTC',
+              text: "BTC",
               style: {
                 color: btcColor,
               },
@@ -357,26 +427,28 @@ export default defineComponent({
               },
             },
           },
-        ]
+        ];
         colors.value = [primaryColor, secondaryColor, btcColor];
-      } else if (activeOption.value === 'cost' && currency.value === 'BTC') {
-        series.value = [{
-          name: capitalizeFirstLetter(activeOption.value),
-          data,
-          type: 'bar'
-        },
-        {
-          name: 'BTC Price',
-          data: btcData,
-          type: 'area'
-        }];
+      } else if (activeOption.value === "cost" && currency.value === "BTC") {
+        series.value = [
+          {
+            name: capitalizeFirstLetter(activeOption.value),
+            data,
+            type: "bar",
+          },
+          {
+            name: "BTC Price",
+            data: btcData,
+            type: "area",
+          },
+        ];
 
         yaxis.value = [
           {
             title: {
               text: capitalizeFirstLetter(activeOption.value),
               style: {
-                color: 'rgba(233, 181, 0, 1)',
+                color: "rgba(233, 181, 0, 1)",
               },
             },
             labels: {
@@ -393,7 +465,7 @@ export default defineComponent({
             show: true,
             opposite: true,
             title: {
-              text: 'BTC',
+              text: "BTC",
               style: {
                 color: btcColor,
               },
@@ -408,21 +480,23 @@ export default defineComponent({
               },
             },
           },
-        ]
-        colors.value = ['rgba(233, 181, 0, 1)', secondaryColor];
-      } else if (activeOption.value === 'cost' && currency.value === 'USD') {
-        series.value = [{
-          name: capitalizeFirstLetter(activeOption.value),
-          data,
-          type: 'bar'
-        }];
+        ];
+        colors.value = ["rgba(233, 181, 0, 1)", secondaryColor];
+      } else if (activeOption.value === "cost" && currency.value === "USD") {
+        series.value = [
+          {
+            name: capitalizeFirstLetter(activeOption.value),
+            data,
+            type: "bar",
+          },
+        ];
 
         yaxis.value = [
           {
             title: {
               text: capitalizeFirstLetter(activeOption.value),
               style: {
-                color: 'rgba(233, 181, 0, 1)',
+                color: "rgba(233, 181, 0, 1)",
               },
             },
             labels: {
@@ -435,19 +509,21 @@ export default defineComponent({
               },
             },
           },
-        ]
-        colors.value = ['rgba(233, 181, 0, 1)'];
-      } else if (activeOption.value === 'revenue' && currency.value === 'BTC') {
-        series.value = [{
-          name: capitalizeFirstLetter(activeOption.value),
-          data,
-          type: 'bar'
-        },
-        {
-          name: 'Difficulty',
-          data: difficultyData,
-          type: 'area'
-        }];
+        ];
+        colors.value = ["rgba(233, 181, 0, 1)"];
+      } else if (activeOption.value === "revenue" && currency.value === "BTC") {
+        series.value = [
+          {
+            name: capitalizeFirstLetter(activeOption.value),
+            data,
+            type: "bar",
+          },
+          {
+            name: "Difficulty",
+            data: difficultyData,
+            type: "area",
+          },
+        ];
 
         yaxis.value = [
           {
@@ -471,7 +547,7 @@ export default defineComponent({
             show: true,
             opposite: true,
             title: {
-              text: 'Difficulty',
+              text: "Difficulty",
               style: {
                 color: secondaryColor,
               },
@@ -489,17 +565,19 @@ export default defineComponent({
         ];
         colors.value = [primaryColor, secondaryColor];
       } else {
-        series.value = [{
-          name: capitalizeFirstLetter(activeOption.value),
-          data
-        }];
+        series.value = [
+          {
+            name: capitalizeFirstLetter(activeOption.value),
+            data,
+          },
+        ];
 
         yaxis.value = [
           {
             title: {
               text: capitalizeFirstLetter(activeOption.value),
               style: {
-                color: 'rgba(71, 190, 125, 1)',
+                color: "rgba(71, 190, 125, 1)",
               },
             },
             labels: {
@@ -511,24 +589,24 @@ export default defineComponent({
                 return formatYAxis(val);
               },
             },
-          }
+          },
         ];
 
-        colors.value = ['rgba(71, 190, 125, 1)'];
+        colors.value = ["rgba(71, 190, 125, 1)"];
       }
 
       Object.assign(chart.value, chartOptions());
       refreshChart();
-    }
+    };
 
     const chartOptions = (): ApexOptions => {
       return {
         chart: {
           fontFamily: "inherit",
           zoom: {
-            type: 'x',
+            type: "x",
             enabled: true,
-            autoScaleYaxis: true
+            autoScaleYaxis: true,
           },
           toolbar: {
             show: true,
@@ -537,11 +615,13 @@ export default defineComponent({
         plotOptions: {
           bar: {
             colors: {
-              ranges: [{
-                from: -Infinity,
-                to: 0,
-                color: '#FF0000'
-              }]
+              ranges: [
+                {
+                  from: -Infinity,
+                  to: 0,
+                  color: "#FF0000",
+                },
+              ],
             },
             horizontal: false,
             columnWidth: "7px",
@@ -552,7 +632,7 @@ export default defineComponent({
           show: false,
         },
         dataLabels: {
-          enabled: false
+          enabled: false,
         },
         stroke: {
           show: true,
@@ -560,7 +640,7 @@ export default defineComponent({
           colors: ["transparent"],
         },
         xaxis: {
-          type: 'datetime',
+          type: "datetime",
           categories: categories.value,
           axisBorder: {
             show: false,
@@ -642,7 +722,7 @@ export default defineComponent({
       currencies,
       currency,
       getDates,
-      setCurrency
+      setCurrency,
     };
   },
 });
@@ -716,5 +796,4 @@ export default defineComponent({
 
   .chart-times .ai-button, .chart-currencies .ai-button
     margin: 5px 0
-
 </style>
