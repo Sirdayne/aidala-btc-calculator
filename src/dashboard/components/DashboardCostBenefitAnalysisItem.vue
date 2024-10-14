@@ -3,17 +3,17 @@
     <div class="cost-benefits-item__options">
       <slot name="cost-benefit-img"></slot>
       <span class="cost-benefits-item__options__label">
-        {{ props.label }}
+        {{ label }}
       </span>
     </div>
     <div class="cost-benefits-item__chart">
       <apexchart
-          ref="chartRef"
-          class="mixed-widget-4-chart"
-          :options="chart"
-          :series="series"
-          :height="chartHeight"
-          type="radialBar"
+        ref="chartRef"
+        class="mixed-widget-4-chart"
+        :options="chart"
+        :series="series"
+        :height="chartHeight"
+        type="radialBar"
       ></apexchart>
     </div>
   </div>
@@ -32,23 +32,22 @@ export default defineComponent({
     chartColor: String,
     backColor: String,
   },
-  components: {},
-  setup(props, ctx) {
-
+  setup(props) {
     const chartRef = ref<typeof VueApexCharts | null>(null);
     const chart = ref<ApexOptions>({});
     const series = ref([]);
     const chartHeight = 170;
 
     watch(
-        () => props.change,
-        () => {
-          setChart();
-        },
-        { deep: true }
+      () => props.change,
+      () => {
+        setChart();
+      },
+      { deep: true }
     )
+
     const setChart = () => {
-      series.value = [props.change];
+      series.value = [props.change || 0];
       Object.assign(chart.value, chartOptions());
       refreshChart();
     }
@@ -113,8 +112,11 @@ export default defineComponent({
       };
     };
 
+    onBeforeMount(() => {
+      setChart();
+    });
+
     return {
-      props,
       chart,
       series,
       chartRef,
@@ -124,34 +126,58 @@ export default defineComponent({
 });
 </script>
 
-<style lang="sass">
-.cost-benefits-item
-  display: flex
-  height: 80px
-  justify-content: space-between
+<style lang="scss">
+.cost-benefits-item {
+  display: flex;
+  height: 80px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  transition: box-shadow 0.3s ease;
 
-  &__img
-    width: 20px
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
 
-  &__options
-    display: flex
-    align-items: center
-    margin-top: 8px
-    margin-right: 40px
-    padding: 12px 12px
-    box-sizing: border-box
-    border: 1px #E1E3EA dotted
-    width: 60%
-    height: 60px
+  &__options {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    border: 1px #E1E3EA dotted;
+    border-radius: 4px;
+    width: 60%;
+    height: 60px;
 
-    &__label
-      color: #181C32
-      font-size: 12px
-      font-weight: 600
-      line-height: 12px
-      margin-left: 12px
+    &__label {
+      color: #181C32;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.2;
+      margin-left: 12px;
+    }
+  }
 
-  &__chart
-    width: 50%
-    overflow: hidden
+  &__chart {
+    width: 40%;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 768px) {
+  .cost-benefits-item {
+    flex-direction: column;
+    height: auto;
+
+    &__options {
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    &__chart {
+      width: 100%;
+    }
+  }
+}
 </style>

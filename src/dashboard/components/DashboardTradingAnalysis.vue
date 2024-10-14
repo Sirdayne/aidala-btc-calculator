@@ -180,12 +180,8 @@ export default defineComponent({
     const checkSellMode = (mode) => {
       console.log("Selected sellMode:", mode);
       calculatorStore.setSellMode(mode);
-      setTotalsFromSellMode(mode);
-    };
-
-    const setTotalsFromSellMode = (mode) => {
-      const foundTotal = state.totals.find((item) => item.sell_mode === mode);
-      setTotalsSummary(foundTotal);
+      const selectedSummary = state.totals.find(item => item.sell_mode === mode) || state.totals[0];
+      setTotalsSummary(selectedSummary);
     };
 
     const totalLabels = {
@@ -206,6 +202,7 @@ export default defineComponent({
           return ["fas", "calendar-alt"];
       }
     };
+
     const setStateTotals = (response) => {
       response.forEach((item) => {
         item.label = totalLabels[item.sell_mode];
@@ -213,7 +210,10 @@ export default defineComponent({
       state.totals = response.sort(
         (a, b) => b.total_profit_usd - a.total_profit_usd
       );
-      setTotalsSummary(state.totals[0]);
+      
+      // Find the total summary for the active sell mode
+      const activeSummary = state.totals.find(item => item.sell_mode === sellMode.value) || state.totals[0];
+      setTotalsSummary(activeSummary);
     };
 
     const setTotalsSummary = (summary: any) => {
