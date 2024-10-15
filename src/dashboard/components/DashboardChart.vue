@@ -52,26 +52,28 @@
         </div>
 
         <div class="segmented-control">
-          <input 
-            type="radio" 
-            id="monthly" 
-            name="timeMode" 
-            :value="'monthly'" 
+          <input
+            type="radio"
+            id="monthly"
+            name="timeMode"
+            :value="'monthly'"
             v-model="timeMode"
             @change="setTimeMode('monthly')"
+          />
+          <label for="monthly" class="segmented-control__item"
+            >Month-by-Month</label
           >
-          <label for="monthly" class="segmented-control__item">Month-by-Month</label>
-          
-          <input 
-            type="radio" 
-            id="daily" 
-            name="timeMode" 
-            :value="'daily'" 
+
+          <input
+            type="radio"
+            id="daily"
+            name="timeMode"
+            :value="'daily'"
             v-model="timeMode"
             @change="setTimeMode('daily')"
-          >
+          />
           <label for="daily" class="segmented-control__item">Day-by-Day</label>
-          
+
           <div class="segmented-control__color"></div>
         </div>
       </div>
@@ -710,6 +712,55 @@ export default defineComponent({
             },
           },
         },
+        // Add the annotations here
+        annotations: {
+          xaxis: [
+            {
+              x: new Date("2012-11-28").getTime(),
+              borderColor: "#FF4560",
+              label: {
+                text: "1st Halving",
+                style: {
+                  color: "#fff",
+                  background: "#FF4560",
+                },
+              },
+            },
+            {
+              x: new Date("2016-07-09").getTime(),
+              borderColor: "#FF4560",
+              label: {
+                text: "2nd Halving",
+                style: {
+                  color: "#fff",
+                  background: "#FF4560",
+                },
+              },
+            },
+            {
+              x: new Date("2020-05-11").getTime(),
+              borderColor: "#FF4560",
+              label: {
+                text: "3rd Halving",
+                style: {
+                  color: "#fff",
+                  background: "#FF4560",
+                },
+              },
+            },
+            {
+              x: new Date("2024-04-20").getTime(),
+              borderColor: "#FF4560",
+              label: {
+                text: "4th Halving",
+                style: {
+                  color: "#fff",
+                  background: "#FF4560",
+                },
+              },
+            },
+          ],
+        },
       };
     };
 
@@ -758,13 +809,13 @@ export default defineComponent({
   display: flex;
 
   .ai-button {
-    color: #7E8299;
+    color: #7e8299;
     background: #fff;
     margin-left: 5px;
 
     &.active {
-      color: #7E8299;
-      background: #F1F1F2;
+      color: #7e8299;
+      background: #f1f1f2;
     }
   }
 }
@@ -784,11 +835,11 @@ export default defineComponent({
   border-radius: 8px;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  
+
   input[type="radio"] {
     display: none;
   }
-  
+
   &__item {
     flex: 1;
     padding: 8px 16px;
@@ -797,31 +848,31 @@ export default defineComponent({
     cursor: pointer;
     transition: color 0.15s ease-in;
     z-index: 1;
-    
+
     &:hover {
-      color: #3E97FF;
+      color: #3e97ff;
     }
   }
-  
+
   &__color {
     position: absolute;
     top: 0;
     left: 0;
     width: 50%;
     height: 100%;
-    background-color: #3E97FF;
+    background-color: #3e97ff;
     transition: transform 0.15s ease-in;
     border-radius: 8px;
   }
-  
+
   input[type="radio"]:checked + &__item {
     color: white;
   }
-  
+
   input[type="radio"]:nth-of-type(1):checked ~ &__color {
     transform: translateX(0%);
   }
-  
+
   input[type="radio"]:nth-of-type(2):checked ~ &__color {
     transform: translateX(100%);
   }
@@ -840,7 +891,8 @@ export default defineComponent({
     display: block;
   }
 
-  .chart-options, .chart-currencies {
+  .chart-options,
+  .chart-currencies {
     display: block;
   }
 

@@ -7,37 +7,28 @@
     <div class="dashboard-chart-stats__rows">
 
       <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">Total Revenue</div>
+        <div class="dashboard-chart-stats__row__label">Gross Profit Margin (%)</div>
         <div class="dashboard-chart-stats__row__item">
-          <DashboardArrow :state="totalSummary.revenue >= 0 ? 'up' : 'down'"></DashboardArrow>
-          <span
-              class="dashboard-chart-stats__row__item__value"
-          >
-            {{ formatCurrency(totalSummary.revenue) }}
+          <span class="dashboard-chart-stats__row__item__value">
+            {{ formatPercentage(grossProfitMargin) }}
           </span>
         </div>
       </div>
 
       <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">Total Costs</div>
+        <div class="dashboard-chart-stats__row__label">Electricity Cost Ratio (%)</div>
         <div class="dashboard-chart-stats__row__item">
-          <DashboardArrow :state="totalSummary.cost >= 0 ? 'up' : 'down'"></DashboardArrow>
-          <span
-              class="dashboard-chart-stats__row__item__value"
-          >
-            {{ formatCurrency(totalSummary.cost) }}
+          <span class="dashboard-chart-stats__row__item__value">
+            {{ formatPercentage(electricityCostRatio) }}
           </span>
         </div>
       </div>
 
       <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">Cumulative Net Profit</div>
+        <div class="dashboard-chart-stats__row__label">Total Cost of Ownership (TCO)</div>
         <div class="dashboard-chart-stats__row__item">
-          <DashboardArrow :state="totalSummary.profit >= 0 ? 'up' : 'down'"></DashboardArrow>
-          <span
-              class="dashboard-chart-stats__row__item__value"
-          >
-            {{ formatCurrency(totalSummary.profit) }}
+          <span class="dashboard-chart-stats__row__item__value">
+            {{ formatCurrency(totalCostOfOwnership) }}
           </span>
         </div>
       </div>
@@ -46,9 +37,7 @@
         <div class="dashboard-chart-stats__row__label">Average Cost of Production per Bitcoin (USD)</div>
         <div class="dashboard-chart-stats__row__item">
           <DashboardArrow :state="totalSummary.avgCostBtc >= 0 ? 'up' : 'down'"></DashboardArrow>
-          <span
-              class="dashboard-chart-stats__row__item__value"
-          >
+          <span class="dashboard-chart-stats__row__item__value">
             {{ formatCurrency(totalSummary.avgCostBtc, true) }}
           </span>
         </div>
@@ -58,7 +47,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, computed } from "vue";
 import DashboardArrow from "./DashboardArrow.vue";
 
 export default defineComponent({
@@ -67,11 +56,13 @@ export default defineComponent({
     miner: Object,
     totalSummary: Object,
     currency: String,
+    quantity: Number,
+    costOfHw: Number,
   },
   components: {
     DashboardArrow
   },
-  setup(props, ctx) {
+  setup(props) {
     const formatCurrency = (item, alwaysUsd = false) => {
       if (!alwaysUsd && props.currency === 'BTC') {
         const formatter = new Intl.NumberFormat('en-US', {
@@ -92,8 +83,35 @@ export default defineComponent({
       }
     }
 
+    const formatPercentage = (value) => {
+      return new Intl.NumberFormat('en-US', {
+        style: 'percent',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(value / 100);
+    }
+
+    const grossProfitMargin = computed(() => {
+      if (props.totalSummary.revenue === 0) return 0;
+      return (props.totalSummary.profit / props.totalSummary.revenue) * 100;
+    });
+
+    const electricityCostRatio = computed(() => {
+      if (props.totalSummary.revenue === 0) return 0;
+      return (props.totalSummary.cost / props.totalSummary.revenue) * 100;
+    });
+
+    const totalCostOfOwnership = computed(() => {
+      const hardwareCost = props.quantity * props.costOfHw;
+      return props.totalSummary.cost + hardwareCost;
+    });
+
     return {
-      formatCurrency
+      formatCurrency,
+      formatPercentage,
+      grossProfitMargin,
+      electricityCostRatio,
+      totalCostOfOwnership
     };
   },
 });
