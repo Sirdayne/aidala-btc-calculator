@@ -5,9 +5,10 @@
       <span class="ai-sub-title">Stats for Selected Period</span>
     </div>
     <div class="dashboard-chart-stats__rows">
-
       <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">Gross Profit Margin (%)</div>
+        <div class="dashboard-chart-stats__row__label">
+          Gross Profit Margin (%)
+        </div>
         <div class="dashboard-chart-stats__row__item">
           <span class="dashboard-chart-stats__row__item__value">
             {{ formatPercentage(grossProfitMargin) }}
@@ -16,7 +17,9 @@
       </div>
 
       <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">Electricity Cost Ratio (%)</div>
+        <div class="dashboard-chart-stats__row__label">
+          Electricity Cost Ratio (%)
+        </div>
         <div class="dashboard-chart-stats__row__item">
           <span class="dashboard-chart-stats__row__item__value">
             {{ formatPercentage(electricityCostRatio) }}
@@ -25,7 +28,27 @@
       </div>
 
       <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">Bitcoin Price at Start ($)</div>
+        <div class="dashboard-chart-stats__row__label">Hardware Cost</div>
+        <div class="dashboard-chart-stats__row__item">
+          <span class="dashboard-chart-stats__row__item__value">
+            {{ formatCurrency(hardwareCost) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="dashboard-chart-stats__row">
+        <div class="dashboard-chart-stats__row__label">
+          Total Cost of Ownership (TCO)
+        </div>
+        <div class="dashboard-chart-stats__row__item">
+          <span class="dashboard-chart-stats__row__item__value">
+            {{ formatCurrency(totalCostOfOwnership) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="dashboard-chart-stats__row">
+        <div class="dashboard-chart-stats__row__label">BTC Price at Start</div>
         <div class="dashboard-chart-stats__row__item">
           <span class="dashboard-chart-stats__row__item__value">
             {{ formatCurrency(startPriceValue, true) }}
@@ -34,9 +57,10 @@
       </div>
 
       <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">Avg. Bitcoin Production Cost ($)</div>
+        <div class="dashboard-chart-stats__row__label">
+          Average Cost of Production per Bitcoin (USD)
+        </div>
         <div class="dashboard-chart-stats__row__item">
-          <DashboardArrow :state="totalSummary.avgCostBtc >= 0 ? 'up' : 'down'"></DashboardArrow>
           <span class="dashboard-chart-stats__row__item__value">
             {{ formatCurrency(totalSummary.avgCostBtc, true) }}
           </span>
@@ -48,36 +72,32 @@
 
 <script lang="ts">
 import { defineComponent, computed, ref, onMounted, watch } from "vue";
-import DashboardArrow from "./DashboardArrow.vue";
-import axios from 'axios';
-import moment from 'moment';
+import axios from "axios";
+import moment from "moment";
 
 export default defineComponent({
   name: "dashboard-chart-stats",
   props: {
     miner: {
       type: Object,
-      required: true
+      required: true,
     },
     totalSummary: {
       type: Object,
-      required: true
+      required: true,
     },
     currency: {
       type: String,
-      required: true
+      required: true,
     },
     startDate: {
       type: String,
-      required: true
+      required: true,
     },
     endDate: {
       type: String,
-      required: true
-    }
-  },
-  components: {
-    DashboardArrow
+      required: true,
+    },
   },
   setup(props) {
     const startPriceValue = ref(0);
@@ -87,20 +107,20 @@ export default defineComponent({
       try {
         const response = await axios.post(`${host}btc_price_at_start`, {
           user_id: 0,
-          time_mode: 'daily',
+          time_mode: "daily",
           currency: props.currency,
           time_filter: {
             start_date: moment(props.startDate).format("YYYY-MM-DDTHH:mm:ss"),
-            end_date: moment(props.endDate).format("YYYY-MM-DDTHH:mm:ss")
+            end_date: moment(props.endDate).format("YYYY-MM-DDTHH:mm:ss"),
           },
           hash_rate: props.miner.hash_rate,
           power: props.miner.power,
           power_cost: props.miner.power_cost,
-          quantity: props.miner.quantity
+          quantity: props.miner.quantity,
         });
         startPriceValue.value = response.data.price;
       } catch (error) {
-        console.error('Error fetching BTC price:', error);
+        console.error("Error fetching BTC price:", error);
       }
     };
 
@@ -117,32 +137,32 @@ export default defineComponent({
     );
 
     const formatCurrency = (item, alwaysUsd = false) => {
-      if (!alwaysUsd && props.currency === 'BTC') {
-        const formatter = new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD',
+      if (!alwaysUsd && props.currency === "BTC") {
+        const formatter = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
           minimumFractionDigits: 6,
-          maximumFractionDigits: 6
+          maximumFractionDigits: 6,
         });
-        return '₿' + formatter.format(item).substring(1);
+        return "₿" + formatter.format(item).substring(1);
       } else {
-        const formatter = new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD',
+        const formatter = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
           minimumFractionDigits: 2,
-          maximumFractionDigits: 2
+          maximumFractionDigits: 2,
         });
-        return formatter.format(item)
+        return formatter.format(item);
       }
-    }
+    };
 
     const formatPercentage = (value) => {
-      return new Intl.NumberFormat('en-US', {
-        style: 'percent',
+      return new Intl.NumberFormat("en-US", {
+        style: "percent",
         minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        maximumFractionDigits: 2,
       }).format(value / 100);
-    }
+    };
 
     const grossProfitMargin = computed(() => {
       if (props.totalSummary.revenue === 0) return 0;
@@ -154,12 +174,41 @@ export default defineComponent({
       return (props.totalSummary.cost / props.totalSummary.revenue) * 100;
     });
 
+    const hardwareCost = computed(() => {
+      const totalHardwareCostUSD =
+        props.miner.cost_of_hw * props.miner.quantity;
+
+      if (props.currency === "BTC" && startPriceValue.value) {
+        // Convert USD to BTC using the start price
+        return totalHardwareCostUSD / startPriceValue.value;
+      }
+      return totalHardwareCostUSD;
+    });
+
+    const totalCostOfOwnership = computed(() => {
+      // Always calculate total cost in USD first
+      const totalHardwareCostUSD =
+        props.miner.cost_of_hw * props.miner.quantity;
+      const totalCostUSD =
+        totalHardwareCostUSD +
+        props.totalSummary.cost *
+          (props.currency === "BTC" ? startPriceValue.value : 1);
+
+      if (props.currency === "BTC" && startPriceValue.value) {
+        // Convert final USD amount to BTC
+        return totalCostUSD / startPriceValue.value;
+      }
+      return totalCostUSD;
+    });
+
     return {
       formatCurrency,
       formatPercentage,
       grossProfitMargin,
       electricityCostRatio,
-      startPriceValue
+      startPriceValue,
+      hardwareCost,
+      totalCostOfOwnership,
     };
   },
 });
