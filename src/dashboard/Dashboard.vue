@@ -1,96 +1,97 @@
 <template>
-
-  <div class="dashboard" v-loading="isHash && !loadedHash" element-loading-text="Loading data from link...">
-
+  <div
+    class="dashboard"
+    v-loading="isHash && !loadedHash"
+    element-loading-text="Loading data from link..."
+  >
     <div class="dashboard-row">
       <DashboardCalculator
-          @setMiner="setMiner"
-          :loading="loading"
+        @setMiner="setMiner"
+        :loading="loading"
       ></DashboardCalculator>
 
       <DashboardTradingAnalysis
-          v-if="loadedHash"
-          :time-mode="timeMode"
-          :miner="miner"
-          :start-date="startDate"
-          :end-date="endDate"
-          :currency="currency"
-          @emit-totals-summary="setTotalsSummary"
+        v-if="loadedHash"
+        :time-mode="timeMode"
+        :miner="miner"
+        :start-date="startDate"
+        :end-date="endDate"
+        :currency="currency"
+        @emit-totals-summary="setTotalsSummary"
       ></DashboardTradingAnalysis>
     </div>
 
     <div>
       <div class="dashboard-row">
         <DashboardChart
-            v-if="loadedHash"
-            :height="330"
-            :miner="miner"
-            :start-date="startDate"
-            :end-date="endDate"
-            @emit-currency="setCurrency"
-            @emit-time-mode="setTimeMode"
+          v-if="loadedHash"
+          :height="330"
+          :miner="miner"
+          :start-date="startDate"
+          :end-date="endDate"
+          @emit-currency="setCurrency"
+          @emit-time-mode="setTimeMode"
         ></DashboardChart>
 
         <div>
           <div class="dashboard-stats">
             <DashboardChartStats
-                v-if="loadedHash"
-                :miner="miner"
-                :total-summary="totalSummary"
-                :currency="currency"
+              v-if="loadedHash"
+              :miner="miner"
+              :total-summary="totalSummary"
+              :currency="currency"
+              :start-date="startDate"
+              :end-date="endDate"
             />
 
             <DashboardCostBenefitAnalysis
-                v-if="loadedHash"
-                :miner="miner"
-                :start-date="startDate"
-                :end-date="endDate"
-                :time-mode="timeMode"
-                :currency="currency"
+              v-if="loadedHash"
+              :miner="miner"
+              :start-date="startDate"
+              :end-date="endDate"
+              :time-mode="timeMode"
+              :currency="currency"
             />
           </div>
         </div>
-
       </div>
     </div>
 
     <div class="ai-dashboard-share">
-
       <DashboardShare
-          v-if="loadedHash"
-          :miner="miner"
-          :start-date="startDate"
-          :end-date="endDate"
-          :time-mode="timeMode"
-          :currency="currency"
+        v-if="loadedHash"
+        :miner="miner"
+        :start-date="startDate"
+        :end-date="endDate"
+        :time-mode="timeMode"
+        :currency="currency"
       />
 
       <DashboardExportButton
-          v-if="loadedHash"
-          :miner="miner"
-          :start-date="startDate"
-          :end-date="endDate"
-          :time-mode="timeMode"
-          :currency="currency"
+        v-if="loadedHash"
+        :miner="miner"
+        :start-date="startDate"
+        :end-date="endDate"
+        :time-mode="timeMode"
+        :currency="currency"
       />
     </div>
 
     <DashboardMarketData></DashboardMarketData>
-
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, reactive, ref } from "vue";
-import DashboardChart from '../dashboard/components/DashboardChart.vue';
-import DashboardChartStats from '../dashboard/components/DashboardChartStats.vue';
-import DashboardCostBenefitAnalysis from '../dashboard/components/DashboardCostBenefitAnalysis.vue';
-import DashboardCalculator from '../dashboard/components/DashboardCalculator.vue';
+import DashboardChart from "../dashboard/components/DashboardChart.vue";
+import DashboardChartStats from "../dashboard/components/DashboardChartStats.vue";
+import DashboardCostBenefitAnalysis from "../dashboard/components/DashboardCostBenefitAnalysis.vue";
+import DashboardCalculator from "../dashboard/components/DashboardCalculator.vue";
 import moment from "moment/moment";
-import DashboardMarketData from '../dashboard/components/DashboardMarketData.vue';
-import DashboardTradingAnalysis from '../dashboard/components/DashboardTradingAnalysis.vue';
-import DashboardExportButton from '@/dashboard/components/DashboardExportButton.vue';
-import DashboardShare from '@/dashboard/components/DashboardShare.vue';
+import DashboardMarketData from "../dashboard/components/DashboardMarketData.vue";
+import DashboardTradingAnalysis from "../dashboard/components/DashboardTradingAnalysis.vue";
+import DashboardExportButton from "@/dashboard/components/DashboardExportButton.vue";
+import DashboardShare from "@/dashboard/components/DashboardShare.vue";
 
 export default defineComponent({
   name: "dashboard-main",
@@ -102,7 +103,7 @@ export default defineComponent({
     DashboardChart,
     DashboardCalculator,
     DashboardExportButton,
-    DashboardShare
+    DashboardShare,
   },
   setup() {
     const loading = ref(false);
@@ -111,22 +112,26 @@ export default defineComponent({
       revenue: 0,
       cost: 0,
       profit: 0,
-      avgCostBtc: 0
+      avgCostBtc: 0,
     });
 
     const miner = ref({
       power_cost: 5.5,
       power: 3348,
-      hash_rate : 62,
+      hash_rate: 62,
       quantity: 10,
-      cost_of_hw: 500
+      cost_of_hw: 500,
     });
 
-    const timeMode = ref('monthly');
-    const currency = ref('BTC');
+    const timeMode = ref("monthly");
+    const currency = ref("BTC");
 
-    const startDate = ref(moment('2023-01-01', 'YYYY-MM-DD').format("YYYY-MM-DDTHH:mm:ss"));
-    const endDate = ref(moment('2024-01-01', 'YYYY-MM-DD').format("YYYY-MM-DDTHH:mm:ss"));
+    const startDate = ref(
+      moment("2023-01-01", "YYYY-MM-DD").format("YYYY-MM-DDTHH:mm:ss")
+    );
+    const endDate = ref(
+      moment("2024-01-01", "YYYY-MM-DD").format("YYYY-MM-DDTHH:mm:ss")
+    );
 
     const setMiner = (val) => {
       loading.value = true;
@@ -136,20 +141,20 @@ export default defineComponent({
       setTimeout(() => {
         loading.value = false;
         isCalculated.value = true;
-      }, 1500)
-    }
+      }, 1500);
+    };
 
     const setTimeMode = (val) => {
       timeMode.value = val;
-    }
+    };
 
     const setCurrency = (val) => {
       currency.value = val;
-    }
+    };
 
     const setTotalsSummary = (val) => {
       totalSummary.value = val;
-    }
+    };
 
     const isHash = ref(false);
     const loadedHash = ref(false);
@@ -157,18 +162,18 @@ export default defineComponent({
     const checkHashLink = () => {
       let uri = window.location.search.substring(1);
       let params = new URLSearchParams(uri);
-      const hash = params.get('hash');
+      const hash = params.get("hash");
       if (hash) {
         isHash.value = true;
-        setTimeout(() => loadedHash.value = true, 1500);
+        setTimeout(() => (loadedHash.value = true), 1500);
       } else {
         loadedHash.value = true;
       }
-    }
+    };
 
     onMounted(() => {
       checkHashLink();
-    })
+    });
 
     return {
       setMiner,
@@ -184,9 +189,9 @@ export default defineComponent({
       isCalculated,
       totalSummary,
       loadedHash,
-      isHash
-    }
-  }
+      isHash,
+    };
+  },
 });
 </script>
 
@@ -239,8 +244,6 @@ export default defineComponent({
   }
 }
 
-
-
 @media only screen and (max-width: 500px) {
   .ai-dashboard-share {
     display: block;
@@ -249,5 +252,4 @@ export default defineComponent({
     display: block;
   }
 }
-
 </style>

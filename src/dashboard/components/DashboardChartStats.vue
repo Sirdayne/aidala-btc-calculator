@@ -25,16 +25,16 @@
       </div>
 
       <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">Total Cost of Ownership (TCO)</div>
+        <div class="dashboard-chart-stats__row__label">Bitcoin Price at Start ($)</div>
         <div class="dashboard-chart-stats__row__item">
           <span class="dashboard-chart-stats__row__item__value">
-            {{ formatCurrency(totalCostOfOwnership) }}
+            {{ formatCurrency(startPriceValue, true) }}
           </span>
         </div>
       </div>
 
       <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">Average Cost of Production per Bitcoin (USD)</div>
+        <div class="dashboard-chart-stats__row__label">Avg. Bitcoin Production Cost ($)</div>
         <div class="dashboard-chart-stats__row__item">
           <DashboardArrow :state="totalSummary.avgCostBtc >= 0 ? 'up' : 'down'"></DashboardArrow>
           <span class="dashboard-chart-stats__row__item__value">
@@ -47,22 +47,75 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from "vue";
+import { defineComponent, computed, ref, onMounted, watch } from "vue";
 import DashboardArrow from "./DashboardArrow.vue";
+import axios from 'axios';
+import moment from 'moment';
 
 export default defineComponent({
   name: "dashboard-chart-stats",
   props: {
-    miner: Object,
-    totalSummary: Object,
-    currency: String,
-    quantity: Number,
-    costOfHw: Number,
+    miner: {
+      type: Object,
+      required: true
+    },
+    totalSummary: {
+      type: Object,
+      required: true
+    },
+    currency: {
+      type: String,
+      required: true
+    },
+    startDate: {
+      type: String,
+      required: true
+    },
+    endDate: {
+      type: String,
+      required: true
+    }
   },
   components: {
     DashboardArrow
   },
   setup(props) {
+    const startPriceValue = ref(0);
+
+    const fetchStartPrice = async () => {
+      const host = import.meta.env.VITE_APP_API_HOST;
+      try {
+        const response = await axios.post(`${host}btc_price_at_start`, {
+          user_id: 0,
+          time_mode: 'daily',
+          currency: props.currency,
+          time_filter: {
+            start_date: moment(props.startDate).format("YYYY-MM-DDTHH:mm:ss"),
+            end_date: moment(props.endDate).format("YYYY-MM-DDTHH:mm:ss")
+          },
+          hash_rate: props.miner.hash_rate,
+          power: props.miner.power,
+          power_cost: props.miner.power_cost,
+          quantity: props.miner.quantity
+        });
+        startPriceValue.value = response.data.price;
+      } catch (error) {
+        console.error('Error fetching BTC price:', error);
+      }
+    };
+
+    onMounted(() => {
+      fetchStartPrice();
+    });
+
+    watch(
+      () => [props.startDate, props.miner],
+      () => {
+        fetchStartPrice();
+      },
+      { deep: true }
+    );
+
     const formatCurrency = (item, alwaysUsd = false) => {
       if (!alwaysUsd && props.currency === 'BTC') {
         const formatter = new Intl.NumberFormat('en-US', {
@@ -101,17 +154,12 @@ export default defineComponent({
       return (props.totalSummary.cost / props.totalSummary.revenue) * 100;
     });
 
-    const totalCostOfOwnership = computed(() => {
-      const hardwareCost = props.quantity * props.costOfHw;
-      return props.totalSummary.cost + hardwareCost;
-    });
-
     return {
       formatCurrency,
       formatPercentage,
       grossProfitMargin,
       electricityCostRatio,
-      totalCostOfOwnership
+      startPriceValue
     };
   },
 });
