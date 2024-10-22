@@ -4,64 +4,84 @@
       <h3 class="ai-title">Mining Financial Summary</h3>
       <span class="ai-sub-title">Stats for Selected Period</span>
     </div>
+
     <div class="dashboard-chart-stats__rows">
+      <!-- MARKET REFERENCE -->
+      <div class="section-title">MARKET REFERENCE</div>
       <div class="dashboard-chart-stats__row">
         <div class="dashboard-chart-stats__row__label">
-          Gross Profit Margin (%)
+          Bitcoin Price at Start
         </div>
         <div class="dashboard-chart-stats__row__item">
-          <span class="dashboard-chart-stats__row__item__value">
-            {{ formatPercentage(grossProfitMargin) }}
-          </span>
-        </div>
-      </div>
-
-      <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">
-          Electricity Cost Ratio (%)
-        </div>
-        <div class="dashboard-chart-stats__row__item">
-          <span class="dashboard-chart-stats__row__item__value">
-            {{ formatPercentage(electricityCostRatio) }}
-          </span>
-        </div>
-      </div>
-
-      <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">Hardware Cost</div>
-        <div class="dashboard-chart-stats__row__item">
-          <span class="dashboard-chart-stats__row__item__value">
-            {{ formatCurrency(hardwareCost) }}
-          </span>
-        </div>
-      </div>
-
-      <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">
-          Total Cost of Ownership (TCO)
-        </div>
-        <div class="dashboard-chart-stats__row__item">
-          <span class="dashboard-chart-stats__row__item__value">
-            {{ formatCurrency(totalCostOfOwnership) }}
-          </span>
-        </div>
-      </div>
-
-      <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">BTC Price at Start</div>
-        <div class="dashboard-chart-stats__row__item">
-          <span class="dashboard-chart-stats__row__item__value">
+          <span class="dashboard-chart-stats__row__item__value main-value">
             {{ formatCurrency(startPriceValue, true) }}
           </span>
         </div>
       </div>
 
+      <!-- PROFITABILITY -->
+      <div class="section-title">PROFITABILITY</div>
+      <div class="dashboard-chart-stats__row">
+        <div class="dashboard-chart-stats__row__label">Gross Profit Margin</div>
+        <div class="dashboard-chart-stats__row__item">
+          <span class="dashboard-chart-stats__row__item__value main-value">
+            {{ formatPercentage(grossProfitMargin) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- COST STRUCTURE -->
+      <div class="section-title">COST STRUCTURE</div>
       <div class="dashboard-chart-stats__row">
         <div class="dashboard-chart-stats__row__label">
-          Average Cost of Production per Bitcoin (USD)
+          Total Cost of Ownership (TCO)
+        </div>
+        <div class="dashboard-chart-stats__row__item">
+          <span class="dashboard-chart-stats__row__item__value main-value">
+            {{ formatCurrency(totalCostOfOwnership) }}
+          </span>
+          <span class="percentage">(100%)</span>
+        </div>
+      </div>
+
+      <div class="dashboard-chart-stats__row">
+        <div class="dashboard-chart-stats__row__label">
+          <span class="bullet electricity"></span>
+          Electricity Cost
         </div>
         <div class="dashboard-chart-stats__row__item">
           <span class="dashboard-chart-stats__row__item__value">
+            {{ formatCurrency(electricityCost) }}
+          </span>
+          <span class="percentage-share"
+            >({{ formatPercentage(electricityCostPercentage) }})</span
+          >
+        </div>
+      </div>
+
+      <div class="dashboard-chart-stats__row">
+        <div class="dashboard-chart-stats__row__label">
+          <span class="bullet hardware"></span>
+          Hardware Cost
+        </div>
+        <div class="dashboard-chart-stats__row__item">
+          <span class="dashboard-chart-stats__row__item__value">
+            {{ formatCurrency(hardwareCost) }}
+          </span>
+          <span class="percentage-share"
+            >({{ formatPercentage(hardwareCostPercentage) }})</span
+          >
+        </div>
+      </div>
+
+      <!-- PERFORMANCE METRICS -->
+      <div class="section-title">PERFORMANCE METRICS</div>
+      <div class="dashboard-chart-stats__row">
+        <div class="dashboard-chart-stats__row__label">
+          Avg. Bitcoin Production Cost
+        </div>
+        <div class="dashboard-chart-stats__row__item">
+          <span class="dashboard-chart-stats__row__item__value main-value">
             {{ formatCurrency(totalSummary.avgCostBtc, true) }}
           </span>
         </div>
@@ -102,6 +122,40 @@ export default defineComponent({
   setup(props) {
     const startPriceValue = ref(0);
 
+    const formatCurrency = (item: number, alwaysUsd = false) => {
+      const value = Math.abs(item);
+      let prefix = item < 0 ? "-" : "";
+
+      if (!alwaysUsd && props.currency === "BTC") {
+        const formatter = new Intl.NumberFormat("en-US", {
+          minimumFractionDigits: 6,
+          maximumFractionDigits: 6,
+        });
+        return prefix + "₿" + formatter.format(value);
+      } else {
+        const formatter = new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+        return prefix + formatter.format(value); // Removed the substring(1) to keep the $
+      }
+    };
+
+    const formatPercentage = (value: number) => {
+      const absValue = Math.abs(value);
+      const prefix = value < 0 ? "-" : "";
+      return (
+        prefix +
+        new Intl.NumberFormat("en-US", {
+          style: "percent",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(absValue / 100)
+      );
+    };
+
     const fetchStartPrice = async () => {
       const host = import.meta.env.VITE_APP_API_HOST;
       try {
@@ -136,50 +190,18 @@ export default defineComponent({
       { deep: true }
     );
 
-    const formatCurrency = (item, alwaysUsd = false) => {
-      if (!alwaysUsd && props.currency === "BTC") {
-        const formatter = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-          minimumFractionDigits: 6,
-          maximumFractionDigits: 6,
-        });
-        return "₿" + formatter.format(item).substring(1);
-      } else {
-        const formatter = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
-        return formatter.format(item);
-      }
-    };
-
-    const formatPercentage = (value) => {
-      return new Intl.NumberFormat("en-US", {
-        style: "percent",
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(value / 100);
-    };
-
     const grossProfitMargin = computed(() => {
       if (props.totalSummary.revenue === 0) return 0;
       return (props.totalSummary.profit / props.totalSummary.revenue) * 100;
     });
 
-    const electricityCostRatio = computed(() => {
-      if (props.totalSummary.revenue === 0) return 0;
-      return (props.totalSummary.cost / props.totalSummary.revenue) * 100;
-    });
+    const electricityCost = computed(() => props.totalSummary.cost);
 
     const hardwareCost = computed(() => {
       const totalHardwareCostUSD =
         props.miner.cost_of_hw * props.miner.quantity;
 
       if (props.currency === "BTC" && startPriceValue.value) {
-        // Convert USD to BTC using the start price
         return totalHardwareCostUSD / startPriceValue.value;
       }
       return totalHardwareCostUSD;
@@ -195,20 +217,41 @@ export default defineComponent({
           (props.currency === "BTC" ? startPriceValue.value : 1);
 
       if (props.currency === "BTC" && startPriceValue.value) {
-        // Convert final USD amount to BTC
         return totalCostUSD / startPriceValue.value;
       }
       return totalCostUSD;
+    });
+
+    const electricityCostPercentage = computed(() => {
+      if (totalCostOfOwnership.value === 0) return 0;
+      if (props.currency === "BTC") {
+        const electricityCostBTC = props.totalSummary.cost;
+        return (electricityCostBTC / totalCostOfOwnership.value) * 100;
+      } else {
+        return (props.totalSummary.cost / totalCostOfOwnership.value) * 100;
+      }
+    });
+
+    const hardwareCostPercentage = computed(() => {
+      if (totalCostOfOwnership.value === 0) return 0;
+      if (props.currency === "BTC") {
+        return (hardwareCost.value / totalCostOfOwnership.value) * 100;
+      } else {
+        const hardwareCostUSD = props.miner.cost_of_hw * props.miner.quantity;
+        return (hardwareCostUSD / totalCostOfOwnership.value) * 100;
+      }
     });
 
     return {
       formatCurrency,
       formatPercentage,
       grossProfitMargin,
-      electricityCostRatio,
       startPriceValue,
       hardwareCost,
+      electricityCost,
       totalCostOfOwnership,
+      electricityCostPercentage,
+      hardwareCostPercentage,
     };
   },
 });
@@ -224,25 +267,64 @@ export default defineComponent({
   &__row
     display: flex
     justify-content: space-between
-    margin: 11px 0 0
-    padding-bottom: 11px
+    margin: 8px 0
+    padding-bottom: 8px
     border-bottom: 1px solid rgba(82, 85, 93, 0.07)
-
-    &:last-child
-      border-bottom: none
 
     &__label
       color: rgb(120, 130, 157)
-      font-weight: bold
-      font-size: 15px
-      max-width: 250px
-      text-align: start
+      font-weight: 500
+      font-size: 14px
+      display: flex
+      align-items: center
+      gap: 8px
 
     &__item
+      display: flex
+      align-items: center
+      gap: 4px
       color: rgb(7, 20, 55)
-      font-weight: bold
-      font-size: 15px
+      font-weight: 600
+      font-size: 14px
 
       &__value
-        margin-left: 5px
+        font-size: 14px
+
+        &.main-value
+          font-weight: 700
+          font-size: 15px
+          color: rgb(17, 24, 39)
+
+.section-title
+  color: rgb(107, 114, 128)
+  font-size: 12px
+  font-weight: 600
+  letter-spacing: 0.5px
+  margin: 24px 0 8px 0
+
+  &:first-child
+    margin-top: 0
+
+.bullet
+  width: 8px
+  height: 8px
+  border-radius: 50%
+  display: inline-block
+
+  &.electricity
+    background-color: #3B82F6
+
+  &.hardware
+    background-color: #8B5CF6
+
+.percentage
+  font-size: 13px
+  color: rgb(107, 114, 128)
+  font-weight: 500
+
+.percentage-share
+  font-size: 13px
+  color: rgb(79, 70, 229)
+  font-weight: 500
+  opacity: 0.9
 </style>
