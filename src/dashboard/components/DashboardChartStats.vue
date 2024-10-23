@@ -2,89 +2,85 @@
   <div class="dashboard-chart-stats ai-card">
     <div class="card-header border-0 pt-5">
       <h3 class="ai-title">Mining Financial Summary</h3>
-      <span class="ai-sub-title">Stats for Selected Period</span>
+      <span class="ai-sub-title">{{ sellStrategyText }} Selling Strategy</span>
     </div>
 
-    <div class="dashboard-chart-stats__rows">
-      <!-- MARKET REFERENCE -->
-      <div class="section-title">MARKET REFERENCE</div>
-      <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">
-          Bitcoin Price at Start
-        </div>
-        <div class="dashboard-chart-stats__row__item">
-          <span class="dashboard-chart-stats__row__item__value main-value">
-            {{ formatCurrency(startPriceValue, true) }}
-          </span>
-        </div>
+    <!-- PROFITABILITY -->
+    <div class="section-title">PROFITABILITY</div>
+    <div class="dashboard-chart-stats__row">
+      <div class="dashboard-chart-stats__row__label">Gross Profit Margin</div>
+      <div class="dashboard-chart-stats__row__item">
+        <span class="dashboard-chart-stats__row__item__value main-value">
+          {{ formatPercentage(grossProfitMargin) }}
+        </span>
       </div>
+    </div>
 
-      <!-- PROFITABILITY -->
-      <div class="section-title">PROFITABILITY</div>
-      <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">Gross Profit Margin</div>
-        <div class="dashboard-chart-stats__row__item">
-          <span class="dashboard-chart-stats__row__item__value main-value">
-            {{ formatPercentage(grossProfitMargin) }}
-          </span>
-        </div>
+    <!-- COST STRUCTURE -->
+    <div class="section-title">COST STRUCTURE</div>
+    <div class="dashboard-chart-stats__row">
+      <div class="dashboard-chart-stats__row__label">
+        Total Cost of Ownership (TCO)
       </div>
-
-      <!-- COST STRUCTURE -->
-      <div class="section-title">COST STRUCTURE</div>
-      <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">
-          Total Cost of Ownership (TCO)
-        </div>
-        <div class="dashboard-chart-stats__row__item">
-          <span class="dashboard-chart-stats__row__item__value main-value">
-            {{ formatCurrency(totalCostOfOwnership) }}
-          </span>
-          <span class="percentage">(100%)</span>
-        </div>
+      <div class="dashboard-chart-stats__row__item">
+        <span class="dashboard-chart-stats__row__item__value main-value">
+          {{ formatCurrency(totalCostOfOwnership) }}
+        </span>
+        <span class="percentage">(100%)</span>
       </div>
+    </div>
 
-      <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">
-          <span class="bullet electricity"></span>
-          Electricity Cost
-        </div>
-        <div class="dashboard-chart-stats__row__item">
-          <span class="dashboard-chart-stats__row__item__value">
-            {{ formatCurrency(electricityCost) }}
-          </span>
-          <span class="percentage-share"
-            >({{ formatPercentage(electricityCostPercentage) }})</span
-          >
-        </div>
+    <div class="dashboard-chart-stats__row">
+      <div class="dashboard-chart-stats__row__label">
+        <span class="bullet electricity"></span>
+        Electricity Cost
       </div>
-
-      <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">
-          <span class="bullet hardware"></span>
-          Hardware Cost
-        </div>
-        <div class="dashboard-chart-stats__row__item">
-          <span class="dashboard-chart-stats__row__item__value">
-            {{ formatCurrency(hardwareCost) }}
-          </span>
-          <span class="percentage-share"
-            >({{ formatPercentage(hardwareCostPercentage) }})</span
-          >
-        </div>
+      <div class="dashboard-chart-stats__row__item">
+        <span class="dashboard-chart-stats__row__item__value">
+          {{ formatCurrency(electricityCost) }}
+        </span>
+        <span class="percentage-share"
+          >({{ formatPercentage(electricityCostPercentage) }})</span
+        >
       </div>
+    </div>
 
-      <!-- PERFORMANCE METRICS -->
-      <div class="section-title">PERFORMANCE METRICS</div>
-      <div class="dashboard-chart-stats__row">
-        <div class="dashboard-chart-stats__row__label">
-          Avg. Bitcoin Production Cost
-        </div>
-        <div class="dashboard-chart-stats__row__item">
-          <span class="dashboard-chart-stats__row__item__value main-value">
-            {{ formatCurrency(totalSummary.avgCostBtc, true) }}
-          </span>
-        </div>
+    <div class="dashboard-chart-stats__row">
+      <div class="dashboard-chart-stats__row__label">
+        <span class="bullet hardware"></span>
+        Hardware Cost
+      </div>
+      <div class="dashboard-chart-stats__row__item">
+        <span class="dashboard-chart-stats__row__item__value">
+          {{ formatCurrency(hardwareCost) }}
+        </span>
+        <span class="percentage-share"
+          >({{ formatPercentage(hardwareCostPercentage) }})</span
+        >
+      </div>
+    </div>
+
+    <!-- OPERATIONAL METRICS -->
+    <div class="section-title">OPERATIONAL METRICS</div>
+    <div class="dashboard-chart-stats__row">
+      <div class="dashboard-chart-stats__row__label">
+        Avg. Bitcoin Production Cost
+      </div>
+      <div class="dashboard-chart-stats__row__item">
+        <span class="dashboard-chart-stats__row__item__value main-value">
+          {{ formatCurrency(totalSummary.avgCostBtc, true) }}
+        </span>
+      </div>
+    </div>
+
+    <div class="dashboard-chart-stats__row">
+      <div class="dashboard-chart-stats__row__label">
+        Bitcoin Price at Start
+      </div>
+      <div class="dashboard-chart-stats__row__item">
+        <span class="dashboard-chart-stats__row__item__value main-value">
+          {{ formatCurrency(startPriceValue, true) }}
+        </span>
       </div>
     </div>
   </div>
@@ -94,6 +90,8 @@
 import { defineComponent, computed, ref, onMounted, watch } from "vue";
 import axios from "axios";
 import moment from "moment";
+import { useCalculatorStore } from "@/stores";
+import { storeToRefs } from "pinia";
 
 export default defineComponent({
   name: "dashboard-chart-stats",
@@ -120,6 +118,13 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const calculatorStore = useCalculatorStore();
+    const { sellMode } = storeToRefs(calculatorStore);
+
+    const sellStrategyText = computed(() => {
+      const mode = sellMode.value;
+      return mode.charAt(0).toUpperCase() + mode.slice(1);
+    });
     const startPriceValue = ref(0);
 
     const formatCurrency = (item: number, alwaysUsd = false) => {
@@ -252,6 +257,7 @@ export default defineComponent({
       totalCostOfOwnership,
       electricityCostPercentage,
       hardwareCostPercentage,
+      sellStrategyText,
     };
   },
 });
