@@ -1,223 +1,177 @@
 <template>
   <div class="ai-card dashboard-calculator">
-    <div class="card-header border-0 pt-5">
-      <h3 class="ai-title">Mining Calculator</h3>
-    </div>
-
     <div class="dashboard-calculator-form">
-      <!-- Model Selection -->
-      <div
-        class="dashboard-calculator-form__item dashboard-calculator-form__item--model"
-      >
-        <div class="label">
-          <font-awesome-icon :icon="['fas', 'microchip']" class="icon mr-2" />
-          Model
+      <div class="form-group calculator-top">
+        <!-- Left column: Model selection and Browse -->
+        <div class="form-group model-group">
+          <div class="dashboard-calculator-form__item dashboard-calculator-form__item--model">
+            <div class="label">
+              <font-awesome-icon :icon="['fas', 'microchip']" class="icon mr-2" />
+              Model
+            </div>
+            <el-select
+              v-model="miner"
+              @change="setMinerData"
+              aria-label="Select miner name"
+              value-key="id"
+              filterable
+              placeholder="Select a miner"
+            >
+              <el-option
+                v-for="item in filteredMiners"
+                :value="item"
+                :label="item.miner_name"
+                :key="item.id"
+              >
+                {{ item?.miner_name }}
+              </el-option>
+            </el-select>
+            <el-button
+              type="info"
+              class="models-details-button"
+              @click="showModelsDialog = true"
+            >
+              <font-awesome-icon :icon="['fas', 'chart-line']" class="icon mr-2" />
+              Browse Models
+            </el-button>
+          </div>
         </div>
 
-        <el-select
-          v-model="miner"
-          @change="setMinerData"
-          aria-label="Select miner name"
-          value-key="id"
-          filterable
-          placeholder="Select a miner"
-        >
-          <el-option
-            v-for="item in filteredMiners"
-            :value="item"
-            :label="item.miner_name"
-            :key="item.id"
-          >
-            {{ item?.miner_name }}
-          </el-option>
-        </el-select>
-
-        <el-button
-          type="info"
-          class="models-details-button"
-          @click="showModelsDialog = true"
-        >
-          <font-awesome-icon :icon="['fas', 'chart-line']" class="icon mr-2" />
-          Browse Models
-        </el-button>
-      </div>
-
-      <!-- Calculator Input Fields -->
-      <div class="dashboard-calculator-form__item">
-        <div class="label">
-          <el-tooltip
-            class="box-item"
-            effect="dark"
-            content="Watt"
-            placement="top-end"
-          >
-            <span>
-              <font-awesome-icon :icon="['fas', 'bolt']" class="icon mr-2" />
-              Power
-            </span>
-          </el-tooltip>
-        </div>
-        <el-tooltip
-          class="input-tooltip"
-          effect="dark"
-          content="Watt"
-          placement="top"
-        >
-          <el-input-number
-            v-model="power"
-            :min="1"
-            placeholder="Power"
-            class="input-with-tooltip"
-          />
-        </el-tooltip>
-      </div>
-
-      <div class="dashboard-calculator-form__item">
-        <div class="label">
-          <el-tooltip
-            class="box-item"
-            effect="dark"
-            content="TH/s"
-            placement="top-end"
-          >
-            <span>
-              <font-awesome-icon
-                :icon="['fas', 'tachometer-alt']"
-                class="icon mr-2"
+        <!-- Right column: Power and Hashrate side by side -->
+        <div class="form-group specs-group">
+          <div class="dashboard-calculator-form__item">
+            <div class="label">
+              <el-tooltip class="box-item" effect="dark" content="Watt" placement="top-end">
+                <span>
+                  <font-awesome-icon :icon="['fas', 'bolt']" class="icon mr-2" />
+                  Power
+                </span>
+              </el-tooltip>
+            </div>
+            <el-tooltip class="input-tooltip" effect="dark" content="Watt" placement="top">
+              <el-input-number
+                v-model="power"
+                :min="1"
+                placeholder="Power"
+                class="input-with-tooltip"
               />
-              Hashrate
-            </span>
-          </el-tooltip>
-        </div>
-        <el-tooltip
-          class="input-tooltip"
-          effect="dark"
-          content="TH/s"
-          placement="top"
-        >
-          <el-input-number
-            v-model="hashrate"
-            :min="0.1"
-            :step="0.1"
-            placeholder="Hashrate"
-            class="input-with-tooltip"
-          />
-        </el-tooltip>
-      </div>
+            </el-tooltip>
+          </div>
 
-      <div class="dashboard-calculator-form__item">
-        <div class="label">
-          <font-awesome-icon :icon="['fas', 'boxes']" class="icon mr-2" />
-          Quantity
-        </div>
-        <el-input-number v-model="quantity" :min="1" placeholder="Quantity" />
-      </div>
-
-      <div class="dashboard-calculator-form__item">
-        <div class="label">
-          <el-tooltip
-            class="box-item"
-            effect="dark"
-            content="$ cents per kWh"
-            placement="top-end"
-          >
-            <span>
-              <font-awesome-icon :icon="['fas', 'plug']" class="icon mr-2" />
-              Energy Cost
-            </span>
-          </el-tooltip>
-        </div>
-        <el-tooltip
-          class="input-tooltip"
-          effect="dark"
-          content="$ cents per kWh"
-          placement="top"
-        >
-          <el-input-number
-            v-model="powerCost"
-            :min="0"
-            :step="0.1"
-            placeholder="Energy Cost"
-            class="input-with-tooltip"
-          />
-        </el-tooltip>
-      </div>
-
-      <div class="dashboard-calculator-form__item">
-        <div class="label">
-          <el-tooltip
-            class="box-item"
-            effect="dark"
-            content="$ per unit"
-            placement="top-end"
-          >
-            <span>
-              <font-awesome-icon
-                :icon="['fas', 'dollar-sign']"
-                class="icon mr-2"
+          <div class="dashboard-calculator-form__item">
+            <div class="label">
+              <el-tooltip class="box-item" effect="dark" content="TH/s" placement="top-end">
+                <span>
+                  <font-awesome-icon :icon="['fas', 'tachometer-alt']" class="icon mr-2" />
+                  Hashrate
+                </span>
+              </el-tooltip>
+            </div>
+            <el-tooltip class="input-tooltip" effect="dark" content="TH/s" placement="top">
+              <el-input-number
+                v-model="hashrate"
+                :min="0.1"
+                :step="0.1"
+                placeholder="Hashrate"
+                class="input-with-tooltip"
               />
-              Cost of hardware
-            </span>
+            </el-tooltip>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle row: Quantity, Energy Cost, Hardware Cost -->
+      <div class="form-group costs-group">
+        <div class="dashboard-calculator-form__item">
+          <div class="label">
+            <font-awesome-icon :icon="['fas', 'boxes']" class="icon mr-2" />
+            Quantity
+          </div>
+          <el-input-number 
+            v-model="quantity" 
+            :min="1" 
+            placeholder="Quantity" 
+          />
+        </div>
+
+        <div class="dashboard-calculator-form__item">
+          <div class="label">
+            <el-tooltip class="box-item" effect="dark" content="$ cents per kWh" placement="top-end">
+              <span>
+                <font-awesome-icon :icon="['fas', 'plug']" class="icon mr-2" />
+                Energy Cost
+              </span>
+            </el-tooltip>
+          </div>
+          <el-tooltip class="input-tooltip" effect="dark" content="$ cents per kWh" placement="top">
+            <el-input-number
+              v-model="powerCost"
+              :min="0"
+              :step="0.1"
+              placeholder="Energy Cost"
+              class="input-with-tooltip"
+            />
           </el-tooltip>
         </div>
-        <el-tooltip
-          class="input-tooltip"
-          effect="dark"
-          content="$ per unit"
-          placement="top"
-        >
-          <el-input-number
-            v-model="costOfHw"
-            :min="1"
-            placeholder="Cost of hardware"
-            class="input-with-tooltip"
-          />
-        </el-tooltip>
+
+        <div class="dashboard-calculator-form__item">
+          <div class="label">
+            <el-tooltip class="box-item" effect="dark" content="$ per unit" placement="top-end">
+              <span>
+                <font-awesome-icon :icon="['fas', 'dollar-sign']" class="icon mr-2" />
+                Cost of hardware
+              </span>
+            </el-tooltip>
+          </div>
+          <el-tooltip class="input-tooltip" effect="dark" content="$ per unit" placement="top">
+            <el-input-number
+              v-model="costOfHw"
+              :min="1"
+              placeholder="Cost of hardware"
+              class="input-with-tooltip"
+            />
+          </el-tooltip>
+        </div>
       </div>
 
-      <!-- Date Range -->
-      <div class="dashboard-calculator-form__item">
-        <div class="label">
-          <font-awesome-icon
-            :icon="['fas', 'calendar-alt']"
-            class="icon mr-2"
+      <!-- Date range row -->
+      <div class="form-group date-group">
+        <div class="dashboard-calculator-form__item">
+          <div class="label">
+            <font-awesome-icon :icon="['fas', 'calendar-alt']" class="icon mr-2" />
+            Start
+          </div>
+          <el-date-picker
+            @change="onStartDateChange"
+            v-model="startDate"
+            type="date"
+            placeholder="Select start date"
+            :picker-options="startPickerOptions"
           />
-          Start
         </div>
-        <el-date-picker
-          @change="onStartDateChange"
-          v-model="startDate"
-          type="date"
-          placeholder="Select start date"
-          :picker-options="startPickerOptions"
-        />
-      </div>
 
-      <div class="dashboard-calculator-form__item">
-        <div class="label">
-          <font-awesome-icon
-            :icon="['fas', 'calendar-alt']"
-            class="icon mr-2"
+        <div class="dashboard-calculator-form__item">
+          <div class="label">
+            <font-awesome-icon :icon="['fas', 'calendar-alt']" class="icon mr-2" />
+            End
+          </div>
+          <el-date-picker
+            @change="onEndDateChange"
+            v-model="endDate"
+            type="date"
+            placeholder="Select end date"
+            :picker-options="endPickerOptions"
           />
-          End
         </div>
-        <el-date-picker
-          @change="onEndDateChange"
-          v-model="endDate"
-          type="date"
-          placeholder="Select end date"
-          :picker-options="endPickerOptions"
-        />
       </div>
 
       <!-- Calculate Button -->
-      <div class="dashboard-calculator-form__item">
-        <div class="label"></div>
+      <div class="dashboard-calculator-form__item calculate-button-container">
         <el-button
           type="primary"
           :disabled="loading"
           @click="emitMiner"
-          class="ai-el-button"
+          class="ai-el-button calculate-button"
           :loading="loading"
         >
           <font-awesome-icon :icon="['fas', 'calculator']" class="icon mr-2" />
@@ -236,12 +190,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, watch, onBeforeMount, onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
-import axios from 'axios';
-import moment from 'moment';
-import { watchDebounced } from '@vueuse/core';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { defineComponent, ref, computed, watch, onBeforeMount } from "vue";
+import { ElMessage } from "element-plus";
+import axios from "axios";
+import moment from "moment";
+import { watchDebounced } from "@vueuse/core";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { library } from "@fortawesome/fontawesome-svg-core";
 import {
   faMicrochip,
   faBoxes,
@@ -251,11 +206,12 @@ import {
   faDollarSign,
   faCalendarAlt,
   faCalculator,
-  faChartLine
-} from '@fortawesome/free-solid-svg-icons';
-import { library } from '@fortawesome/fontawesome-svg-core';
-import CryptoJS from 'crypto-js';
-import ModelsBrowser from './ModelsBrowser.vue';
+  faChartLine,
+  faSearch,
+  faSpinner,
+  faCheck,
+} from "@fortawesome/free-solid-svg-icons";
+import ModelsBrowser from "./ModelsBrowser.vue";
 
 // Add icons to library
 library.add(
@@ -268,6 +224,9 @@ library.add(
   faCalendarAlt,
   faCalculator,
   faChartLine,
+  faSearch,
+  faSpinner,
+  faCheck
 );
 
 interface Miner {
@@ -280,7 +239,7 @@ interface Miner {
 }
 
 export default defineComponent({
-  name: 'DashboardCalculator',
+  name: "DashboardCalculator",
   components: {
     FontAwesomeIcon,
     ModelsBrowser,
@@ -288,7 +247,7 @@ export default defineComponent({
   props: {
     loading: Boolean,
   },
-  emits: ['setMiner'],
+  emits: ["setMiner"],
   setup(props, { emit }) {
     // State
     const showModelsDialog = ref(false);
@@ -315,15 +274,19 @@ export default defineComponent({
 
     const startPickerOptions = {
       disabledDate(time: Date) {
-        return time.getTime() < startValidationDate.getTime() ||
-               time.getTime() > endValidationDate.getTime();
+        return (
+          time.getTime() < startValidationDate.getTime() ||
+          time.getTime() > endValidationDate.getTime()
+        );
       },
     };
 
     const endPickerOptions = {
       disabledDate(time: Date) {
-        return time.getTime() < startValidationDate.getTime() ||
-               time.getTime() > endValidationDate.getTime();
+        return (
+          time.getTime() < startValidationDate.getTime() ||
+          time.getTime() > endValidationDate.getTime()
+        );
       },
     };
 
@@ -372,17 +335,26 @@ export default defineComponent({
       setMinerData();
     };
 
-    const validateDate = (date: Date, minDate: Date, maxDate: Date, dateType: string): Date => {
+    const validateDate = (
+      date: Date,
+      minDate: Date,
+      maxDate: Date,
+      dateType: string
+    ): Date => {
       if (moment(date).isBefore(minDate, "day")) {
         ElMessage({
-          message: `Sorry, the earliest available date is ${moment(minDate).format("LL")}`,
+          message: `Sorry, the earliest available date is ${moment(
+            minDate
+          ).format("LL")}`,
           type: "error",
         });
         return minDate;
       }
       if (moment(date).isAfter(maxDate, "day")) {
         ElMessage({
-          message: `Sorry, the latest available date is ${moment(maxDate).format("LL")}`,
+          message: `Sorry, the latest available date is ${moment(
+            maxDate
+          ).format("LL")}`,
           type: "error",
         });
         return maxDate;
@@ -391,16 +363,29 @@ export default defineComponent({
     };
 
     const onStartDateChange = () => {
-      startDate.value = validateDate(startDate.value, startValidationDate, endValidationDate, "start");
+      startDate.value = validateDate(
+        startDate.value,
+        startValidationDate,
+        endValidationDate,
+        "start"
+      );
       updateMinerIfInvalid();
     };
 
     const onEndDateChange = () => {
-      endDate.value = validateDate(endDate.value, startValidationDate, endValidationDate, "end");
+      endDate.value = validateDate(
+        endDate.value,
+        startValidationDate,
+        endValidationDate,
+        "end"
+      );
     };
 
     const updateMinerIfInvalid = () => {
-      if (miner.value && !filteredMiners.value.some((m) => m.id === miner.value?.id)) {
+      if (
+        miner.value &&
+        !filteredMiners.value.some((m) => m.id === miner.value?.id)
+      ) {
         if (filteredMiners.value.length > 0) {
           miner.value = filteredMiners.value[0];
           setMinerData();
@@ -413,7 +398,7 @@ export default defineComponent({
     };
 
     const emitMiner = () => {
-      emit('setMiner', {
+      emit("setMiner", {
         startDate: startDate.value,
         endDate: endDate.value,
         power_cost: powerCost.value,
@@ -428,7 +413,9 @@ export default defineComponent({
     // Fetch initial data
     const fetchFormData = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_APP_API_HOST}asics`);
+        const response = await axios.get(
+          `${import.meta.env.VITE_APP_API_HOST}asics`
+        );
         if (response?.data?.items) {
           allMiners.value = response.data.items.map((item: any) => ({
             id: item.id,
@@ -436,7 +423,9 @@ export default defineComponent({
             hashrate: parseFloat(item.hashrate.toString()),
             power: parseInt(item.power.toString(), 10),
             release: item.release,
-            efficiency: parseFloat(((item.hashrate * 1000) / item.power).toFixed(2)),
+            efficiency: parseFloat(
+              ((item.hashrate * 1000) / item.power).toFixed(2)
+            ),
           }));
 
           const foundMiner = filteredMiners.value.find(
@@ -451,10 +440,10 @@ export default defineComponent({
           }
         }
       } catch (error) {
-        console.error('Form Fetch Error:', error);
+        console.error("Form Fetch Error:", error);
         ElMessage({
-          message: 'Failed to load miners. Please try again later.',
-          type: 'error',
+          message: "Failed to load miners. Please try again later.",
+          type: "error",
         });
       }
     };
@@ -465,13 +454,18 @@ export default defineComponent({
     // Watch for changes
     watch(startDate, updateMinerIfInvalid);
     watchDebounced(
-      () => [quantity.value, hashrate.value, power.value, powerCost.value, costOfHw.value],
+      () => [
+        quantity.value,
+        hashrate.value,
+        power.value,
+        powerCost.value,
+        costOfHw.value,
+      ],
       emitMiner,
       { debounce: 500, maxWait: 1000 }
     );
 
     return {
-      // Template refs
       showModelsDialog,
       miner,
       quantity,
@@ -498,53 +492,76 @@ export default defineComponent({
 
 <style lang="scss">
 .dashboard-calculator {
-  flex: 80%;
+  flex: 73%;
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
-  .card-header {
-    margin-bottom: 20px;
-  }
-
-  .ai-title {
-    color: #181c32;
-    font-size: 18px;
-    font-weight: 600;
-    line-height: 1.5;
-  }
 }
 
 .dashboard-calculator-form {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 20px;
-  padding-bottom: 15px;
-  justify-content: flex-start;
+
+  .form-group {
+    display: flex;
+    gap: 20px;
+  }
+
+  .calculator-top {
+    display: flex;
+    gap: 20px;
+
+    > * {
+      flex: 1;
+    }
+  }
+
+  .model-group {
+    flex-direction: column;
+    gap: 10px;
+
+    .models-details-button {
+      width: 100%;
+      margin-top: 0;
+    }
+  }
+
+  .specs-group {
+    flex-direction: row; // Changed from column to row
+    gap: 20px;
+
+    .dashboard-calculator-form__item {
+      flex: 1;
+    }
+  }
+
+  .date-group {
+    flex-direction: row;
+
+    .dashboard-calculator-form__item {
+      flex: 1;
+    }
+  }
 
   &__item {
     display: flex;
     flex-direction: column;
-    flex: 1 1 220px;
-    min-width: 200px;
+    min-width: 0; // Prevents flex items from overflowing
 
-    // Model selection section
-    &--model {
-      flex: 2 1 450px;
-
-      .models-details-button {
-        margin-top: 10px;
-      }
-    }
-
-    // Label styling
     .label {
       margin-bottom: 5px;
       color: rgba(94, 98, 120, 1);
       font-size: 14px;
       font-weight: 600;
       line-height: 1.5;
+    }
+
+    &--model {
+      .el-select {
+        margin-bottom: 10px;
+      }
     }
   }
 }
@@ -564,32 +581,60 @@ export default defineComponent({
   width: 100%;
 }
 
+// Calculate button styling
+.calculate-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.calculate-button {
+  min-width: 200px;
+}
+
 // Button styling
 .button-icon {
   margin-right: 8px;
 }
 
-// Responsive Design
-@media only screen and (max-width: 1700px) {
-  .dashboard-calculator-form__item {
-    flex: 1 1 180px;
+// Icon styling
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+}
 
-    &--model {
-      flex: 2 1 350px;
+// Responsive Design
+@media only screen and (max-width: 1100px) {
+  .dashboard-calculator-form {
+    .calculator-top {
+      flex-direction: column;
+    }
+
+    .costs-group,
+    .date-group {
+      flex-direction: column;
+    }
+
+    .form-group {
+      gap: 15px;
+    }
+
+    &__item {
+      min-width: 100%;
     }
   }
 }
 
-@media only screen and (max-width: 1100px) {
-  .dashboard-calculator-form {
-    flex-direction: column;
-    gap: 15px;
+@media only screen and (max-width: 768px) {
+  .dashboard-calculator {
+    padding: 15px;
+  }
 
-    &__item,
-    &__item--model {
-      flex: 1 1 100%;
-      min-width: 100%;
-    }
+  .calculate-button {
+    width: 100%;
   }
 }
 </style>
