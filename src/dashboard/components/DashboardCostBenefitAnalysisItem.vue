@@ -2,9 +2,14 @@
   <div class="cost-benefits-item">
     <div class="cost-benefits-item__options">
       <slot name="cost-benefit-img"></slot>
-      <span class="cost-benefits-item__options__label">
-        {{ label }}
-      </span>
+      <div class="cost-benefits-item__options__text">
+        <span class="cost-benefits-item__options__label">
+          {{ label }}
+        </span>
+        <span class="cost-benefits-item__options__breakeven">
+          Time to Breakeven: {{ breakevenText }}
+        </span>
+      </div>
     </div>
     <div class="cost-benefits-item__chart">
       <apexchart
@@ -37,6 +42,12 @@ export default defineComponent({
     const chart = ref<ApexOptions>({});
     const series = ref([]);
     const chartHeight = 170;
+
+    const breakevenText = computed(() => {
+      return (props.change || 0) >= 100 ? 
+        `${Math.ceil(100 / ((props.change || 0) / 12))} months` : 
+        'Never';
+    });
 
     watch(
       () => props.change,
@@ -120,7 +131,8 @@ export default defineComponent({
       chart,
       series,
       chartRef,
-      chartHeight
+      chartHeight,
+      breakevenText
     };
   },
 });
@@ -150,12 +162,23 @@ export default defineComponent({
     width: 60%;
     height: 60px;
 
+    &__text {
+      display: flex;
+      flex-direction: column;
+      margin-left: 12px;
+    }
+
     &__label {
       color: #181C32;
       font-size: 14px;
       font-weight: 600;
       line-height: 1.2;
-      margin-left: 12px;
+    }
+
+    &__breakeven {
+      color: #7E8299;
+      font-size: 12px;
+      margin-top: 4px;
     }
   }
 
