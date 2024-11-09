@@ -6,8 +6,12 @@
         <span class="cost-benefits-item__options__label">
           {{ label }}
         </span>
-        <span class="cost-benefits-item__options__breakeven">
-          Time to Breakeven: {{ breakevenText }}
+        <!-- Conditionally render the breakeven line -->
+        <span
+          v-if="breakevenText"
+          class="cost-benefits-item__options__breakeven"
+        >
+        Recovered in {{ breakevenText }}
         </span>
       </div>
     </div>
@@ -43,10 +47,11 @@ export default defineComponent({
     const series = ref([]);
     const chartHeight = 170;
 
+    // Updated computed property
     const breakevenText = computed(() => {
-      return (props.change || 0) >= 100 ? 
-        `${Math.ceil(100 / ((props.change || 0) / 12))} months` : 
-        'Never';
+      return (props.change || 0) >= 100
+        ? `${Math.ceil((100 * 12) / (props.change || 1))} months`
+        : '';
     });
 
     watch(
@@ -55,13 +60,13 @@ export default defineComponent({
         setChart();
       },
       { deep: true }
-    )
+    );
 
     const setChart = () => {
       series.value = [props.change || 0];
       Object.assign(chart.value, chartOptions());
       refreshChart();
-    }
+    };
 
     const refreshChart = () => {
       if (!chartRef.value) {
@@ -157,7 +162,7 @@ export default defineComponent({
     display: flex;
     align-items: center;
     padding: 0.5rem;
-    border: 1px #E1E3EA dotted;
+    border: 1px #e1e3ea dotted;
     border-radius: 4px;
     width: 60%;
     height: 60px;
@@ -169,14 +174,14 @@ export default defineComponent({
     }
 
     &__label {
-      color: #181C32;
+      color: #181c32;
       font-size: 14px;
       font-weight: 600;
       line-height: 1.2;
     }
 
     &__breakeven {
-      color: #7E8299;
+      color: #7e8299;
       font-size: 12px;
       margin-top: 4px;
     }
