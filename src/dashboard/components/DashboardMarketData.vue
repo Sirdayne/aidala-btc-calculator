@@ -57,7 +57,7 @@
 
         <div class="asic-modal__preview">
           <div class="asic-modal__preview-row">
-            <span>Current Hashrate</span>
+            <span>Specifications Hashrate</span>
             <span class="asic-modal__preview-value">{{ hashrate }} TH/s</span>
           </div>
           <div class="asic-modal__preview-row">
