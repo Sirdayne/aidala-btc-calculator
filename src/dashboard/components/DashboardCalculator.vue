@@ -1,8 +1,9 @@
 <template>
   <div class="ai-card dashboard-calculator">
     <div class="dashboard-calculator-form">
+      <!-- Form Groups and Inputs -->
       <div class="form-group calculator-top">
-        <!-- Left column: Model selection and Browse -->
+        <!-- Model Selection -->
         <div class="form-group model-group">
           <div
             class="dashboard-calculator-form__item dashboard-calculator-form__item--model"
@@ -45,8 +46,9 @@
           </div>
         </div>
 
-        <!-- Right column: Power and Hashrate side by side -->
+        <!-- Specs Group: Power and Hashrate -->
         <div class="form-group specs-group">
+          <!-- Power Input -->
           <div class="dashboard-calculator-form__item">
             <div class="label">
               <el-tooltip
@@ -79,6 +81,7 @@
             </el-tooltip>
           </div>
 
+          <!-- Hashrate Input -->
           <div class="dashboard-calculator-form__item">
             <div class="label">
               <el-tooltip
@@ -114,8 +117,9 @@
         </div>
       </div>
 
-      <!-- Middle row: Quantity, Energy Cost, Hardware Cost -->
+      <!-- Costs Group: Quantity, Energy Cost, Hardware Cost -->
       <div class="form-group costs-group">
+        <!-- Quantity Input -->
         <div class="dashboard-calculator-form__item">
           <div class="label">
             <font-awesome-icon :icon="['fas', 'boxes']" class="icon mr-2" />
@@ -124,6 +128,7 @@
           <el-input-number v-model="quantity" :min="1" placeholder="Quantity" />
         </div>
 
+        <!-- Energy Cost Input -->
         <div class="dashboard-calculator-form__item">
           <div class="label">
             <el-tooltip
@@ -154,6 +159,7 @@
           </el-tooltip>
         </div>
 
+        <!-- Cost of Hardware Input -->
         <div class="dashboard-calculator-form__item">
           <div class="label">
             <el-tooltip
@@ -195,8 +201,9 @@
         @update="handleAdvancedSettingsUpdate"
       />
 
-      <!-- Date range row -->
+      <!-- Date Group: Start and End Dates -->
       <div class="form-group date-group">
+        <!-- Start Date -->
         <div class="dashboard-calculator-form__item">
           <div class="label">
             <font-awesome-icon
@@ -214,6 +221,7 @@
           />
         </div>
 
+        <!-- End Date -->
         <div class="dashboard-calculator-form__item">
           <div class="label">
             <font-awesome-icon
@@ -316,7 +324,7 @@ export default defineComponent({
   props: {
     loading: Boolean,
   },
-  emits: ["setMiner"],
+  emits: ["setMiner", "updateHashrate"],
   setup(props, { emit }) {
     // State
     const showModelsDialog = ref(false);
@@ -399,6 +407,7 @@ export default defineComponent({
           ((miner.value.hashrate * 1000) / miner.value.power).toFixed(2)
         );
       }
+      emitMiner();
     };
 
     const selectModel = (model: Miner) => {
@@ -425,18 +434,18 @@ export default defineComponent({
     ): Date => {
       if (moment(date).isBefore(minDate, "day")) {
         ElMessage({
-          message: `Sorry, the earliest available date is ${moment(
-            minDate
-          ).format("LL")}`,
+          message: `Sorry, the earliest available date is ${moment(minDate).format(
+            "LL"
+          )}`,
           type: "error",
         });
         return minDate;
       }
       if (moment(date).isAfter(maxDate, "day")) {
         ElMessage({
-          message: `Sorry, the latest available date is ${moment(
-            maxDate
-          ).format("LL")}`,
+          message: `Sorry, the latest available date is ${moment(maxDate).format(
+            "LL"
+          )}`,
           type: "error",
         });
         return maxDate;
@@ -481,6 +490,7 @@ export default defineComponent({
 
     const emitMiner = () => {
       emit("setMiner", {
+        miner_name: miner.value?.miner_name || "",
         startDate: startDate.value,
         endDate: endDate.value,
         power_cost: powerCost.value,
@@ -493,6 +503,11 @@ export default defineComponent({
         profitSharePercentage: profitSharePercentage.value,
       });
     };
+
+    // Watchers
+    watch(hashrate, (newValue) => {
+      emit("updateHashrate", newValue);
+    });
 
     // Fetch initial data
     const fetchFormData = async () => {
@@ -700,7 +715,7 @@ export default defineComponent({
 :deep(.el-date-editor.el-input) {
   width: 100%;
   height: 32px;
-  
+
   .el-input__wrapper {
     padding: 0 8px;
   }
@@ -710,12 +725,12 @@ export default defineComponent({
   .el-input-number__decrease,
   .el-input-number__increase {
     width: 28px;
-    
+
     &:hover {
       color: var(--el-color-primary);
     }
   }
-  
+
   .el-input__wrapper {
     padding: 0 28px;
   }

@@ -7,6 +7,7 @@
     <div class="dashboard-row">
       <DashboardCalculator
         @setMiner="setMiner"
+        @updateHashrate="updateHashrate"
         :loading="loading"
       ></DashboardCalculator>
 
@@ -43,7 +44,6 @@
               :start-date="startDate"
               :end-date="endDate"
             />
-
             <DashboardCostBenefitAnalysis
               v-if="loadedHash"
               :miner="miner"
@@ -66,7 +66,6 @@
         :time-mode="timeMode"
         :currency="currency"
       />
-
       <DashboardExportButton
         v-if="loadedHash"
         :miner="miner"
@@ -77,12 +76,16 @@
       />
     </div>
 
-    <DashboardMarketData></DashboardMarketData>
+    <!-- Pass the hashrate and currentMiner props here -->
+    <DashboardMarketData
+      :hashrate="miner.hash_rate"
+      :currentMiner="miner.miner_name"
+    ></DashboardMarketData>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, reactive, ref } from "vue";
+import { defineComponent, onMounted, ref } from "vue";
 import DashboardChart from "../dashboard/components/DashboardChart.vue";
 import DashboardChartStats from "../dashboard/components/DashboardChartStats.vue";
 import DashboardCostBenefitAnalysis from "../dashboard/components/DashboardCostBenefitAnalysis.vue";
@@ -116,6 +119,7 @@ export default defineComponent({
     });
 
     const miner = ref({
+      miner_name: "",
       power_cost: 5.5,
       power: 3348,
       hash_rate: 62,
@@ -134,14 +138,21 @@ export default defineComponent({
     );
 
     const setMiner = (val) => {
-      loading.value = true;
-      miner.value = val;
+      miner.value = {
+        ...miner.value,
+        miner_name: val.miner_name,
+        power_cost: val.power_cost,
+        power: val.power,
+        hash_rate: val.hash_rate,
+        quantity: val.quantity,
+        cost_of_hw: val.cost_of_hw,
+      };
       startDate.value = val.startDate;
       endDate.value = val.endDate;
-      setTimeout(() => {
-        loading.value = false;
-        isCalculated.value = true;
-      }, 1500);
+    };
+
+    const updateHashrate = (newHashrate) => {
+      miner.value.hash_rate = newHashrate;
     };
 
     const setTimeMode = (val) => {
@@ -177,6 +188,7 @@ export default defineComponent({
 
     return {
       setMiner,
+      updateHashrate,
       miner,
       startDate,
       endDate,
