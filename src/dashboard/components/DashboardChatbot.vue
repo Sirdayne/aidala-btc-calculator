@@ -1,8 +1,11 @@
 <template>
     <div class="ai-card chat-container">
       <div class="chat-messages" ref="messagesContainer">
-        <div v-for="(message, index) in messages" :key="index" 
-             :class="['message', message.role]">
+        <div
+          v-for="(message, index) in messages"
+          :key="index"
+          :class="['message', message.role]"
+        >
           <div class="message-content">{{ message.content }}</div>
         </div>
       </div>
@@ -14,10 +17,11 @@
           :disabled="isLoading"
           class="chat-input-field"
         />
-        <button 
-          @click="sendMessage" 
+        <button
+          @click="sendMessage"
           :disabled="isLoading || !userInput.trim()"
-          class="chat-submit-button">
+          class="chat-submit-button"
+        >
           Send
         </button>
       </div>
@@ -25,61 +29,64 @@
   </template>
   
   <script lang="ts">
-  import { defineComponent, ref, watch } from 'vue'
-  import axios from 'axios'
+  import { defineComponent, ref, watch } from 'vue';
+  import axios from 'axios';
   
-  interface Message {
-    role: 'system' | 'user' | 'assistant'
-    content: string
-    }
-    
   export default defineComponent({
     name: 'DashboardChatbot',
     props: {
       miner: {
         type: Object,
-        required: true
+        required: true,
       },
       totalSummary: {
         type: Object,
-        required: true
+        required: true,
       },
       currency: {
         type: String,
-        required: true
-      }
+        required: true,
+      },
     },
     setup(props) {
-      const messages = ref<Message[]>([
-        { 
+      const messages = ref([
+        {
           role: 'assistant',
-          content: 'Hello! I can help you analyze your mining results. What would you like to know?'
-        }
-      ])
-      const userInput = ref('')
-      const isLoading = ref(false)
-      const messagesContainer = ref(null)
+          content:
+            'Hello! I can help you analyze your mining results. What would you like to know?',
+        },
+      ]);
+      const userInput = ref('');
+      const isLoading = ref(false);
+      const messagesContainer = ref(null);
   
       // Auto scroll to bottom when new messages are added
-      watch(messages, () => {
-        setTimeout(() => {
-          if (messagesContainer.value) {
-            messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-          }
-        }, 0)
-      }, { deep: true })
+      watch(
+        messages,
+        () => {
+          setTimeout(() => {
+            if (messagesContainer.value) {
+              messagesContainer.value.scrollTop =
+                messagesContainer.value.scrollHeight;
+            }
+          }, 0);
+        },
+        { deep: true }
+      );
   
       const sendMessage = async () => {
-        if (!userInput.value.trim() || isLoading.value) return
+        if (!userInput.value.trim() || isLoading.value) return;
   
-        const userMessage = userInput.value
-        messages.value.push({ role: 'user', content: userMessage })
-        userInput.value = ''
-        isLoading.value = true
+        const userMessage = userInput.value;
+        messages.value.push({ role: 'user', content: userMessage });
+        userInput.value = '';
+        isLoading.value = true;
   
         try {
-          const baseUrl = import.meta.env.VITE_API_URL || 'https://aidala.uk'
-          const response = await axios.post(`${baseUrl}/api/chat`, {
+          const host =
+            import.meta.env.VITE_APP_API_HOST;
+          const endpoint = 'chat';
+          const response = await axios.post(`${host}${endpoint}`, {
             messages: messages.value, // Send the entire conversation history
             miner_name: props.miner.miner_name,
             power_cost: props.miner.power_cost,
@@ -91,33 +98,33 @@
             total_cost: props.totalSummary.cost,
             total_profit: props.totalSummary.profit,
             avg_cost_btc: props.totalSummary.avgCostBtc,
-            currency: props.currency
-          })
+            currency: props.currency,
+          });
   
           messages.value.push({
             role: 'assistant',
-            content: response.data.response
-          })
+            content: response.data.response,
+          });
         } catch (error) {
-          console.error('Chat error:', error)
+          console.error('Chat error:', error);
           messages.value.push({
             role: 'assistant',
-            content: 'Sorry, I encountered an error. Please try again.'
-          })
+            content: 'Sorry, I encountered an error. Please try again.',
+          });
         } finally {
-          isLoading.value = false
+          isLoading.value = false;
         }
-      }
+      };
   
       return {
         messages,
         userInput,
         isLoading,
         sendMessage,
-        messagesContainer
-      }
-    }
-  })
+        messagesContainer,
+      };
+    },
+  });
   </script>
   
   <style scoped>
