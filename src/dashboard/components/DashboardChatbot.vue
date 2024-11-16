@@ -1,10 +1,9 @@
-<!-- DashboardChatbot.vue -->
 <template>
     <div class="ai-card chat-container">
       <div class="chat-messages" ref="messagesContainer">
         <div v-for="(message, index) in messages" :key="index" 
-             :class="['message', message.type]">
-          <div class="message-content">{{ message.text }}</div>
+             :class="['message', message.role]">
+          <div class="message-content">{{ message.content }}</div>
         </div>
       </div>
       <div class="chat-input">
@@ -27,7 +26,13 @@
   
   <script lang="ts">
   import { defineComponent, ref, watch } from 'vue'
+  import axios from 'axios'
   
+  interface Message {
+    role: 'system' | 'user' | 'assistant'
+    content: string
+    }
+    
   export default defineComponent({
     name: 'DashboardChatbot',
     props: {
@@ -44,11 +49,11 @@
         required: true
       }
     },
-    setup() {
-      const messages = ref([
+    setup(props) {
+      const messages = ref<Message[]>([
         { 
-          type: 'assistant',
-          text: 'Hello! I can help you analyse your mining results. What would you like to know?'
+          role: 'assistant',
+          content: 'Hello! I can help you analyze your mining results. What would you like to know?'
         }
       ])
       const userInput = ref('')
@@ -68,22 +73,36 @@
         if (!userInput.value.trim() || isLoading.value) return
   
         const userMessage = userInput.value
-        messages.value.push({ type: 'user', text: userMessage })
+        messages.value.push({ role: 'user', content: userMessage })
         userInput.value = ''
         isLoading.value = true
   
         try {
-          // TODO: Implement actual API call to LLM backend
-          // For now, just simulate a response
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          const baseUrl = import.meta.env.VITE_API_URL || 'https://aidala.uk'
+          const response = await axios.post(`${baseUrl}/api/chat`, {
+            messages: messages.value, // Send the entire conversation history
+            miner_name: props.miner.miner_name,
+            power_cost: props.miner.power_cost,
+            power: props.miner.power,
+            hash_rate: props.miner.hash_rate,
+            quantity: props.miner.quantity,
+            cost_of_hw: props.miner.cost_of_hw,
+            total_revenue: props.totalSummary.revenue,
+            total_cost: props.totalSummary.cost,
+            total_profit: props.totalSummary.profit,
+            avg_cost_btc: props.totalSummary.avgCostBtc,
+            currency: props.currency
+          })
+  
           messages.value.push({
-            type: 'assistant',
-            text: 'This is a placeholder response. Backend integration pending.'
+            role: 'assistant',
+            content: response.data.response
           })
         } catch (error) {
+          console.error('Chat error:', error)
           messages.value.push({
-            type: 'assistant',
-            text: 'Sorry, I encountered an error. Please try again.'
+            role: 'assistant',
+            content: 'Sorry, I encountered an error. Please try again.'
           })
         } finally {
           isLoading.value = false
