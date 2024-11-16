@@ -23,6 +23,12 @@
     </div>
 
     <div>
+      <DashboardChatbot
+        v-if="loadedHash"
+        :miner="miner"
+        :total-summary="totalSummary"
+        :currency="currency"
+      />
       <div class="dashboard-row">
         <DashboardChart
           v-if="loadedHash"
@@ -76,7 +82,6 @@
       />
     </div>
 
-    <!-- Pass the hashrate and currentMiner props here -->
     <DashboardMarketData
       :hashrate="miner.hash_rate"
       :currentMiner="miner.miner_name"
@@ -86,6 +91,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from "vue";
+import DashboardChatbot from "./components/DashboardChatbot.vue";
 import DashboardChart from "../dashboard/components/DashboardChart.vue";
 import DashboardChartStats from "../dashboard/components/DashboardChartStats.vue";
 import DashboardCostBenefitAnalysis from "../dashboard/components/DashboardCostBenefitAnalysis.vue";
@@ -99,6 +105,7 @@ import DashboardShare from "@/dashboard/components/DashboardShare.vue";
 export default defineComponent({
   name: "dashboard-main",
   components: {
+    DashboardChatbot,
     DashboardTradingAnalysis,
     DashboardMarketData,
     DashboardCostBenefitAnalysis,
