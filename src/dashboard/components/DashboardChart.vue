@@ -795,7 +795,7 @@ export default defineComponent({
 .dashboard-chart-card-header {
   display: flex;
   justify-content: space-between;
-  padding: 0 1.25rem;
+  padding: 12px 0 0 1.25rem;
   border-bottom: 1px solid var(--bs-card-border-color);
 }
 

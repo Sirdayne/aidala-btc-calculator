@@ -1,29 +1,56 @@
 <template>
-  <div class="ai-card chat-container">
-    <div class="chat-messages" ref="messagesContainer">
-      <div
-        v-for="(message, index) in messages"
-        :key="index"
-        :class="['message', message.role]"
-      >
-        <div class="message-content">{{ message.content }}</div>
+  <div class="ai-card">
+    <!-- Collapsible Header -->
+    <div 
+      class="chat-header"
+      @click="toggleExpand"
+    >
+      <div class="header-content">
+        <div class="assistant-avatar breathing">
+          <i class="fas fa-robot"></i>
+        </div>
+        <div class="assistant-info">
+          <span class="assistant-name">MineGPT</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="status-indicator" :class="{ 'online': true }"></span>
+        <i :class="['fas', isExpanded ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
       </div>
     </div>
-    <div class="chat-input">
-      <input
-        v-model="userInput"
-        @keyup.enter="sendMessage"
-        placeholder="Ask about your mining results..."
-        :disabled="isLoading"
-        class="chat-input-field"
-      />
-      <button
-        @click="sendMessage"
-        :disabled="isLoading || !userInput.trim()"
-        class="chat-submit-button"
-      >
-        Send
-      </button>
+
+    <!-- Chat Container -->
+    <div :class="['chat-container', { 'expanded': isExpanded }]">
+      <div class="chat-messages" ref="messagesContainer">
+        <div
+          v-for="(message, index) in messages"
+          :key="index"
+          :class="['message', message.role]"
+        >
+          <div class="message-content">
+            <div v-if="message.role === 'assistant'" class="assistant-icon breathing">
+              <i class="fas fa-robot"></i>
+            </div>
+            <div class="message-text">{{ message.content }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <input
+          v-model="userInput"
+          @keyup.enter="sendMessage"
+          placeholder="Ask MineGPT about your mining stats..."
+          :disabled="isLoading"
+          class="chat-input-field"
+        />
+        <button
+          @click="sendMessage"
+          :disabled="isLoading || !userInput.trim()"
+          class="chat-submit-button"
+        >
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -53,12 +80,17 @@ export default defineComponent({
       {
         role: "assistant",
         content:
-          "Hello! I can help you analyse your mining results. What would you like to know?",
+          "Hi! I'm MineGPT, your mining analytics assistant. I can help analyse your mining setup and provide insights. What would you like to know? 🤖",
       },
     ]);
     const userInput = ref("");
     const isLoading = ref(false);
+    const isExpanded = ref(false);
     const messagesContainer = ref(null);
+
+    const toggleExpand = () => {
+      isExpanded.value = !isExpanded.value;
+    };
 
     // Auto scroll to bottom when new messages are added
     watch(
@@ -74,6 +106,18 @@ export default defineComponent({
       { deep: true }
     );
 
+    // Also scroll to bottom when expanded
+    watch(isExpanded, (newValue) => {
+      if (newValue) {
+        setTimeout(() => {
+          if (messagesContainer.value) {
+            messagesContainer.value.scrollTop =
+              messagesContainer.value.scrollHeight;
+          }
+        }, 300); // Wait for expansion animation
+      }
+    });
+
     const sendMessage = async () => {
       if (!userInput.value.trim() || isLoading.value) return;
 
@@ -86,7 +130,7 @@ export default defineComponent({
         const host = import.meta.env.VITE_APP_API_HOST;
         const endpoint = "chat";
         const response = await axios.post(`${host}${endpoint}`, {
-          messages: messages.value, // Send the entire conversation history
+          messages: messages.value,
           miner_name: props.miner.miner_name,
           power_cost: props.miner.power_cost,
           power: props.miner.power,
@@ -107,7 +151,6 @@ export default defineComponent({
       } catch (error) {
         console.error("Chat error:", error);
 
-        // Array of funny error messages
         const funnyErrors = [
           "Oops! My mining rig is taking a coffee break. Back soon! ⚡",
           "Well, this is awkward... My blockchain just went on vacation. Getting back soon! 🏖️",
@@ -115,7 +158,6 @@ export default defineComponent({
           "My ASIC got distracted by some cute LLMs. Soon! 🎮",
         ];
 
-        // Select a random error message
         const randomError =
           funnyErrors[Math.floor(Math.random() * funnyErrors.length)];
 
@@ -132,7 +174,9 @@ export default defineComponent({
       messages,
       userInput,
       isLoading,
+      isExpanded,
       sendMessage,
+      toggleExpand,
       messagesContainer,
     };
   },
@@ -140,82 +184,223 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.chat-container {
-  margin-top: 20px;
-  padding: 20px;
-  height: 300px;
+.ai-card {
+  margin-top: 12px;
+  border-radius: 12px;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chat-header {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 12px;
+  background-color: white;
+  transition: background-color 0.3s ease;
+}
+
+.chat-header:hover {
+  background-color: #f8f9fa;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@keyframes breathing {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4);
+  }
+  
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(52, 152, 219, 0);
+  }
+  
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+  }
+}
+
+.assistant-avatar {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.assistant-avatar.breathing {
+  animation: breathing 3s ease-in-out infinite;
+}
+
+.assistant-avatar i {
+  color: white;
+  font-size: 18px;
+}
+
+.assistant-info {
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+.assistant-name {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 15px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #95a5a6;
+}
+
+.status-indicator.online {
+  background-color: #2ecc71;
+}
+
+.chat-container {
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-container.expanded {
+  height: 300px;
+  opacity: 1;
+  padding: 20px;
 }
 
 .chat-messages {
   flex-grow: 1;
   overflow-y: auto;
   margin-bottom: 16px;
-  padding-right: 12px; /* Increased padding */
+  padding-right: 12px;
 }
 
 .message {
-  margin: 10px 0; /* Adjust margin for better spacing */
-  padding: 10px 15px;
-  border-radius: 15px; /* Rounded corners */
-  max-width: 70%;
-  line-height: 1.4; /* Improved line height for readability */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Subtle shadow for messages */
-  transition: all 0.3s ease; /* Add a smooth transition */
+  margin: 10px 0;
+  max-width: 80%;
 }
 
 .message.user {
-  background-color: #e0f2f7; /* Lighter blue for user */
-  margin-left: auto; /* Align to the right */
-  align-self: flex-end;
+  margin-left: auto;
 }
 
 .message.assistant {
-  background-color: #f0f4f8; /* Lighter grey for assistant */
-  margin-right: auto; /* Align to the left */
-  align-self: flex-start;
+  margin-right: auto;
+}
+
+.message-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 15px;
+  border-radius: 15px;
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.message.user .message-content {
+  background-color: #3498db;
+  color: white;
+  flex-direction: row-reverse;
+}
+
+.assistant-icon {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.assistant-icon i {
+  color: white;
+  font-size: 12px;
+}
+
+.message-text {
+  flex: 1;
 }
 
 .chat-input {
   display: flex;
   gap: 10px;
   align-items: center;
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 12px;
 }
 
 .chat-input-field {
   flex-grow: 1;
   padding: 10px 15px;
-  border: 1px solid #d1d5db; /* Subtle border */
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
   font-size: 14px;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s ease;
+  background-color: white;
 }
 
 .chat-input-field:focus {
-  border-color: #3498db; /* Highlight border on focus */
+  border-color: #3498db;
   outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
 .chat-submit-button {
-  padding: 10px 20px;
+  padding: 10px;
+  width: 40px;
+  height: 40px;
   background-color: #3498db;
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .chat-submit-button:hover:not(:disabled) {
-  background-color: #2980b9; /* Darker shade on hover */
+  background-color: #2980b9;
+  transform: translateY(-1px);
 }
 
 .chat-submit-button:disabled {
   background-color: #bdc3c7;
   cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+
+  .chat-container.expanded {
+    height: 400px;
+  }
 }
 </style>
