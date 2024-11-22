@@ -132,7 +132,7 @@ export default defineComponent({
         const response = await axios.post(`${host}${endpoint}`, {
           messages: messages.value,
           miner_name: props.miner.miner_name,
-          power_cost: props.miner.power_cost,
+          power_cost: props.miner.power_cost / 100, // Convert cents to dollars
           power: props.miner.power,
           hash_rate: props.miner.hash_rate,
           quantity: props.miner.quantity,
