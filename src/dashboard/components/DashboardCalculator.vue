@@ -498,6 +498,7 @@ export default defineComponent({
         hash_rate: hashrate.value,
         quantity: quantity.value,
         cost_of_hw: costOfHw.value,
+        release: miner.value?.release || "",
         efficiency: miner.value?.efficiency || 0,
         energyCostType: energyCostType.value,
         profitSharePercentage: profitSharePercentage.value,

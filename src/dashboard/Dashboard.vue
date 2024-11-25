@@ -132,6 +132,7 @@ export default defineComponent({
       hash_rate: 62,
       quantity: 10,
       cost_of_hw: 500,
+      release: "",
     });
 
     const timeMode = ref("monthly");

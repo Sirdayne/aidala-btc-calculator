@@ -142,6 +142,7 @@ export default defineComponent({
           total_profit: props.totalSummary.profit,
           avg_cost_btc: props.totalSummary.avgCostBtc,
           currency: props.currency,
+          release: props.miner.release,
         });
 
         messages.value.push({
