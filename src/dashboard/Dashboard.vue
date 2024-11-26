@@ -154,6 +154,7 @@ export default defineComponent({
         hash_rate: val.hash_rate,
         quantity: val.quantity,
         cost_of_hw: val.cost_of_hw,
+        release: val.release,
       };
       startDate.value = val.startDate;
       endDate.value = val.endDate;
