@@ -1,26 +1,26 @@
+# Template section
 <template>
   <div class="ai-card">
     <!-- Collapsible Header -->
-    <div 
-      class="chat-header"
-      @click="toggleExpand"
-    >
+    <div class="chat-header" @click="toggleExpand">
       <div class="header-content">
-        <div class="assistant-avatar breathing">
-          <i class="fas fa-robot"></i>
+        <div class="assistant-avatar" :class="{ breathing: true }">
+          <font-awesome-icon :icon="['fas', 'robot']" />
         </div>
         <div class="assistant-info">
           <span class="assistant-name">MineGPT</span>
         </div>
       </div>
       <div class="header-actions">
-        <span class="status-indicator" :class="{ 'online': true }"></span>
-        <i :class="['fas', isExpanded ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
+        <span class="status-indicator" :class="{ online: true }"></span>
+        <font-awesome-icon
+          :icon="['fas', isExpanded ? 'chevron-up' : 'chevron-down']"
+        />
       </div>
     </div>
 
     <!-- Chat Container -->
-    <div :class="['chat-container', { 'expanded': isExpanded }]">
+    <div :class="['chat-container', { expanded: isExpanded }]">
       <div class="chat-messages" ref="messagesContainer">
         <div
           v-for="(message, index) in messages"
@@ -28,9 +28,10 @@
           :class="['message', message.role]"
         >
           <div class="message-content">
-            <div v-if="message.role === 'assistant'" class="assistant-icon breathing">
-              <i class="fas fa-robot"></i>
-            </div>
+            <div
+              v-if="message.role === 'assistant'"
+              class="assistant-icon"
+            ></div>
             <div class="message-text">{{ message.content }}</div>
           </div>
         </div>
@@ -48,7 +49,7 @@
           :disabled="isLoading || !userInput.trim()"
           class="chat-submit-button"
         >
-          <i class="fas fa-paper-plane"></i>
+          <font-awesome-icon :icon="['fas', 'paper-plane']" />
         </button>
       </div>
     </div>
@@ -58,9 +59,23 @@
 <script lang="ts">
 import { defineComponent, ref, watch } from "vue";
 import axios from "axios";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import {
+  faRobot,
+  faPaperPlane,
+  faChevronUp,
+  faChevronDown,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+
+// Add icons to library
+library.add(faRobot, faPaperPlane, faChevronUp, faChevronDown);
 
 export default defineComponent({
   name: "DashboardChatbot",
+  components: {
+    FontAwesomeIcon,
+  },
   props: {
     miner: {
       type: Object,
@@ -218,12 +233,12 @@ export default defineComponent({
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4);
   }
-  
+
   50% {
     transform: scale(1.05);
     box-shadow: 0 0 0 8px rgba(52, 152, 219, 0);
   }
-  
+
   100% {
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
@@ -238,15 +253,21 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
+  position: relative;
+}
+
+.assistant-avatar .svg-inline--fa {
+  width: 18px;
+  height: 18px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .assistant-avatar.breathing {
   animation: breathing 3s ease-in-out infinite;
-}
-
-.assistant-avatar i {
-  color: white;
-  font-size: 18px;
 }
 
 .assistant-info {
@@ -314,7 +335,7 @@ export default defineComponent({
 
 .message-content {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   padding: 10px 15px;
   border-radius: 15px;
@@ -333,18 +354,14 @@ export default defineComponent({
   height: 24px;
   background: linear-gradient(135deg, #3498db, #2980b9);
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.assistant-icon i {
-  color: white;
-  font-size: 12px;
+  flex-shrink: 0;
 }
 
 .message-text {
   flex: 1;
+  display: flex;
+  align-items: center;
+  min-height: 24px;
 }
 
 .chat-input {
@@ -399,7 +416,6 @@ export default defineComponent({
 }
 
 @media (max-width: 768px) {
-
   .chat-container.expanded {
     height: 400px;
   }
