@@ -25,7 +25,7 @@
           <div class="live-market-data-item">
             <div class="live-market-data-item__label">Difficulty</div>
             <div class="live-market-data-item__value">
-              83,126,997,340,025.00
+              {{ formatDifficulty(difficulty) }}
             </div>
           </div>
         </div>
@@ -93,7 +93,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onBeforeMount, toRefs } from "vue";
+import { defineComponent, ref, onBeforeMount, onMounted, toRefs } from "vue";
 import axios from "axios";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -123,29 +123,68 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const { hashrate } = toRefs(props); // Make hashrate reactive
-    const btcPrice = ref(67980.08);
-    const volumeBtc = ref(0.17748118);
+    const { hashrate } = toRefs(props);
+    const btcPrice = ref(0);
+    const volumeBtc = ref(0);
+    const difficulty = ref(0);
     const showAsicForm = ref(false);
     const email = ref("");
     const miningPool = ref("");
 
-    onBeforeMount(() => {
-      fetchBTCPrice();
-    });
+    // Format difficulty to be more readable
+    const formatDifficulty = (value: number) => {
+      if (!value) return "Loading...";
+      return value.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    };
 
     const fetchBTCPrice = () => {
-      const api = "https://api.blockchain.com/v3/exchange/tickers/BTC-USD";
+      const api = "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT";
       axios
         .get(api)
         .then((response) => {
-          btcPrice.value = response?.data?.last_trade_price;
-          volumeBtc.value = response?.data?.volume_24h;
+          // Binance API returns { symbol: "BTCUSDT", price: "46000.00" }
+          btcPrice.value = parseFloat(response.data.price); // Changed from last_trade_price
+          // Note: Binance doesn't provide volume in this endpoint,
+          // so we can either remove volumeBtc or use a different endpoint for volume
         })
         .catch((error) => {
-          console.log("Chart Error: ", error);
+          console.log("Price Fetch Error: ", error);
         });
     };
+
+    const fetchDifficulty = () => {
+      // Using Blockchain.info API to fetch current difficulty
+      const api = "https://blockchain.info/q/getdifficulty";
+      axios
+        .get(api)
+        .then((response) => {
+          difficulty.value = response.data;
+        })
+        .catch((error) => {
+          console.log("Difficulty Fetch Error: ", error);
+        });
+    };
+
+    // Function to refresh all data
+    const refreshData = () => {
+      fetchBTCPrice();
+      fetchDifficulty();
+    };
+
+    onBeforeMount(() => {
+      refreshData();
+    });
+
+    // Set up auto-refresh every 5 minutes
+    onMounted(() => {
+      const refreshInterval = setInterval(refreshData, 5 * 60 * 1000);
+
+      // Cleanup interval on component unmount
+      return () => clearInterval(refreshInterval);
+    });
 
     const handleSubmit = () => {
       const payload = {
@@ -157,16 +196,13 @@ export default defineComponent({
         .post("/api/send_demo_email", payload)
         .then((response) => {
           console.log("Email sent successfully", response);
-          // Optionally, display a success message to the user
           alert("Your request has been submitted successfully!");
           showAsicForm.value = false;
-          // Reset form fields
           email.value = "";
           miningPool.value = "";
         })
         .catch((error) => {
           console.error("Error sending email", error);
-          // Optionally, handle the error, e.g., show a message to the user
           alert(
             "There was an error submitting your request. Please try again later."
           );
@@ -176,11 +212,13 @@ export default defineComponent({
     return {
       volumeBtc,
       btcPrice,
+      difficulty,
+      formatDifficulty,
       showAsicForm,
       email,
       miningPool,
       handleSubmit,
-      hashrate, // Use the reactive hashrate ref
+      hashrate,
     };
   },
 });
