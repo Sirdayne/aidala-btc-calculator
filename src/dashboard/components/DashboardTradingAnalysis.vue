@@ -6,6 +6,7 @@
     </div>
 
     <div class="dashboard-trading-analysis__content">
+      <!-- Existing Rows: Daily, Weekly, Monthly -->
       <div
         v-for="(item, index) in state.totals"
         :key="index"
@@ -59,6 +60,62 @@
           </div>
         </div>
       </div>
+
+      <!-- New Optimal Mix Row -->
+      <div
+        class="dashboard-trading-analysis__row"
+        :class="{
+          'dashboard-trading-analysis__row_active': sellMode === 'optimal_mix',
+        }"
+      >
+        <div class="dashboard-trading-analysis__row__label">
+          <div class="ai-form-check">
+            <input
+              class="ai-form-check-input"
+              type="radio"
+              :checked="sellMode === 'optimal_mix'"
+              @change="checkSellMode('optimal_mix')"
+            />
+            <label class="ai-form-check-label">
+              <font-awesome-icon :icon="['fas', 'trophy']" class="icon mr-2" />
+              Optimal Mix
+            </label>
+          </div>
+        </div>
+
+        <div class="dashboard-trading-analysis__row__items">
+          <div class="dashboard-trading-analysis__row__item">
+            <div class="dashboard-trading-analysis__row__item__value">
+              {{ formatCurrency(state.optimalMix.total_rev_usd) }}
+            </div>
+            <div class="dashboard-trading-analysis__row__item__label">
+              Revenue
+            </div>
+          </div>
+
+          <div class="dashboard-trading-analysis__row__item">
+            <div class="dashboard-trading-analysis__row__item__value">
+              {{ formatCurrency(state.optimalMix.total_cost_usd) }}
+            </div>
+            <div class="dashboard-trading-analysis__row__item__label">
+              Cost
+            </div>
+          </div>
+
+          <div class="dashboard-trading-analysis__row__item">
+            <div class="dashboard-trading-analysis__row__item__value">
+              {{ formatCurrency(state.optimalMix.total_profit_usd) }}
+            </div>
+            <div
+              class="dashboard-trading-analysis__row__item__label"
+              :class="{'dashboard-trading-analysis__row__item__label_negative': state.optimalMix.total_profit_usd < 0}"
+            >
+              Profit
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End of Optimal Mix Row -->
     </div>
   </div>
 </template>
@@ -75,9 +132,10 @@ import {
   faCalendarDay,
   faCalendarWeek,
   faCalendarAlt,
+  faTrophy,
 } from "@fortawesome/free-solid-svg-icons";
 
-library.add(faCalendarDay, faCalendarWeek, faCalendarAlt);
+library.add(faCalendarDay, faCalendarWeek, faCalendarAlt, faTrophy);
 
 export default defineComponent({
   name: "dashboard-trading-analysis",
@@ -123,6 +181,13 @@ export default defineComponent({
           label: "Once a month",
         },
       ],
+      optimalMix: {
+        sell_mode: "optimal_mix",
+        total_cost_usd: 0,
+        total_profit_usd: 0,
+        total_rev_usd: 0,
+        avg_cost_per_btc: 0,
+      },
     });
 
     watch(
@@ -141,8 +206,7 @@ export default defineComponent({
       const host = import.meta.env.VITE_APP_API_HOST;
       const endpoint = "summaries";
 
-      const minerValue =
-        props && props.miner && props.miner ? props.miner : null;
+      const minerValue = props && props.miner && props.miner ? props.miner : null;
       let body;
 
       if (minerValue) {
@@ -177,10 +241,13 @@ export default defineComponent({
         });
     };
 
-    const checkSellMode = (mode) => {
+    const checkSellMode = (mode: string) => {
       console.log("Selected sellMode:", mode);
       calculatorStore.setSellMode(mode);
-      const selectedSummary = state.totals.find(item => item.sell_mode === mode) || state.totals[0];
+      const selectedSummary = 
+        mode === 'optimal_mix' 
+          ? state.optimalMix
+          : state.totals.find(item => item.sell_mode === mode) || state.totals[0];
       setTotalsSummary(selectedSummary);
     };
 
@@ -190,7 +257,7 @@ export default defineComponent({
       monthly: "Sell Monthly",
     };
 
-    const getIcon = (sellMode) => {
+    const getIcon = (sellMode: string) => {
       switch (sellMode) {
         case "daily":
           return ["fas", "calendar-day"];
@@ -203,7 +270,7 @@ export default defineComponent({
       }
     };
 
-    const setStateTotals = (response) => {
+    const setStateTotals = (response: any[]) => {
       response.forEach((item) => {
         item.label = totalLabels[item.sell_mode];
       });
@@ -211,8 +278,9 @@ export default defineComponent({
         (a, b) => b.total_profit_usd - a.total_profit_usd
       );
       
-      // Find the total summary for the active sell mode
-      const activeSummary = state.totals.find(item => item.sell_mode === sellMode.value) || state.totals[0];
+      const activeSummary = sellMode.value === 'optimal_mix' 
+        ? state.optimalMix
+        : state.totals.find(item => item.sell_mode === sellMode.value) || state.totals[0];
       setTotalsSummary(activeSummary);
     };
 
@@ -225,24 +293,15 @@ export default defineComponent({
       });
     };
 
-    const formatCurrency = (item) => {
-      if (props.currency === "BTC") {
-        const formatter = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-          minimumFractionDigits: 6,
-          maximumFractionDigits: 6,
-        });
-        return formatter.format(item).replace("$", "₿");
-      } else {
-        const formatter = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
-        return formatter.format(item);
-      }
+    const formatCurrency = (item: number) => {
+      const formatter = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: props.currency === "BTC" ? 6 : 2,
+        maximumFractionDigits: props.currency === "BTC" ? 6 : 2,
+      });
+      const formatted = formatter.format(item);
+      return props.currency === "BTC" ? formatted.replace("$", "₿") : formatted;
     };
 
     return {
