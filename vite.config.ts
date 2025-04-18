@@ -23,8 +23,8 @@ export default defineConfig({
     lib: {
       entry: 'src/main.ts',
       name: 'BundleJS',
-      fileName: () => `aidala-btc-calculator.js`,
-      formats: ['es']
+      fileName: (format) => `aidala-btc-calculator.${format}.js`,
+      formats: ['es', 'umd']
     }
   },
   define: {
