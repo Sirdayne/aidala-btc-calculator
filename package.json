@@ -1,6 +1,6 @@
 {
   "name": "aidala-btc-calculator",
-  "version": "0.0.71",
+  "version": "0.0.72",
   "main": "./dist/aidala-btc-calculator.umd.js",
   "module": "./dist/aidala-btc-calculator.es.js",
   "files": [
