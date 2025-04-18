@@ -141,9 +141,12 @@ export default defineComponent({
       userInput.value = "";
       isLoading.value = true;
 
+      // Declare host outside the try block to avoid scope issues
+      const host = import.meta.env.VITE_APP_API_HOST;
+      const endpoint = "chat";
+
       try {
-        const host = import.meta.env.VITE_APP_API_HOST;
-        const endpoint = "chat";
+        // Use host here
         const response = await axios.post(`${host}${endpoint}`, {
           messages: messages.value,
           miner_name: props.miner.miner_name,
